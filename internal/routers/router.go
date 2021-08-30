@@ -2,28 +2,17 @@ package routers
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/controllers"
 	"github.com/xstnet/starfire-cloud/internal/middleware"
 )
 
-func MyHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// 获取header里的token值，没有话，就通过 c.Abort() 方法取消请求的继续进行，从而抛出异常
-		if token := c.GetHeader("token"); token == "" {
-			c.JSON(http.StatusForbidden, gin.H{"error": "token not found"})
-			c.Abort()
-		} else {
-			// 让程序继续正常运行
-			c.Next()
-		}
-	}
-}
-
 func SetupRouters() *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+	r.Use(middleware.RequestCostHandler(), gin.Logger(), gin.Recovery())
+
+	// r.Use(middleware.TokenHandler())
 
 	// ping
 	r.GET("/ping", func(c *gin.Context) {
@@ -32,7 +21,7 @@ func SetupRouters() *gin.Engine {
 		})
 	})
 
-	r.GET("/test", middleware.TokenHandler(), func(c *gin.Context) {
+	r.GET("/test", middleware.TokenAuthHandler(), func(c *gin.Context) {
 		fmt.Println("tttttttt")
 	})
 
@@ -51,19 +40,30 @@ func SetupRouters() *gin.Engine {
 
 		// /s/:name // 分享
 
-		// user
-		user := v1.Group("/user")
+		// login & register
+		v1.POST("/login", controllers.Login)
+		v1.POST("/register", controllers.Register)
+
+		// User
+		user := v1.Group("/user", middleware.TokenAuthHandler())
 		{
-			user.POST("/login", controllers.Login)
-			user.POST("/register", controllers.Register)
 			user.POST("/change-password", controllers.ChangePassword)
 			user.POST("/change-avatar", controllers.ChangeAvatar)
 			user.POST("/profile", controllers.UpdateProfile)
 			user.GET("/profile", controllers.GetProfile)
 		}
 
+		// File operation
+		file := v1.Group("/file", middleware.TokenAuthHandler())
+		{
+			file.POST("/mkdir", controllers.Mkdir)
+		}
+
 		// 上传
-		// /upload/file POST
+		// upload := v1.Group("/upload", middleware.TokenAuthHandler())
+		// {
+		// 	upload.POST("/single-file", middleware.TokenAuthHandler())
+		// }
 
 	}
 

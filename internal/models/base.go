@@ -1,7 +1,7 @@
 package models
 
 type BaseField struct {
-	ID        uint
-	CreatedAt uint
-	UpdatedAt uint
+	ID        uint `json:"id"`
+	CreatedAt uint `json:"created_at"`
+	UpdatedAt uint `json:"updated_at"`
 }

@@ -15,7 +15,7 @@ func Login(c *gin.Context) {
 	user, err := loginForm.Login()
 	// 登录失败
 	if err != nil {
-		c.JSON(200, utils.ResponseError(err.Error()))
+		utils.ResponseError(c, err.Error())
 		return
 	}
 
@@ -23,7 +23,7 @@ func Login(c *gin.Context) {
 	tokenString, _ := utils.GenerateToken(int(user.ID))
 	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
 
-	c.JSON(200, utils.ResponseSuccess("登录成功", &data))
+	utils.ResponseSuccess(c, "登录成功", &data)
 }
 
 // 用户注册
@@ -33,7 +33,7 @@ func Register(c *gin.Context) {
 	c.ShouldBindJSON(&regForm)
 	err := regForm.CheckParams()
 	if err != nil {
-		c.JSON(200, utils.ResponseError(err.Error()))
+		utils.ResponseError(c, err.Error())
 		return
 	}
 
@@ -45,7 +45,7 @@ func Register(c *gin.Context) {
 		Password: regForm.Password,
 	}
 	if err := user.Register(); err != nil {
-		c.JSON(200, utils.ResponseError("注册失败, 原因："+err.Error()))
+		utils.ResponseError(c, "注册失败, 原因："+err.Error())
 		return
 	}
 
@@ -53,7 +53,7 @@ func Register(c *gin.Context) {
 	tokenString, _ := utils.GenerateToken(int(user.ID))
 	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
 
-	c.JSON(200, utils.ResponseSuccess("注册成功", &data))
+	utils.ResponseSuccess(c, "注册成功", &data)
 }
 func GetProfile(c *gin.Context)     {}
 func UpdateProfile(c *gin.Context)  {}

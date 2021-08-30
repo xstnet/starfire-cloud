@@ -9,11 +9,11 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/utils"
 )
 
-func TokenHandler() gin.HandlerFunc {
+func TokenAuthHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
 		if tokenString == "" {
-			c.JSON(200, utils.ResponseError("请先登录后再操作"))
+			utils.ResponseError(c, "请先登录后再操作")
 			c.Abort()
 			return
 		}
@@ -21,7 +21,7 @@ func TokenHandler() gin.HandlerFunc {
 		claims, err := utils.ParseToken(tokenString)
 		if err != nil {
 			// 解析Token错误
-			c.JSON(200, utils.ResponseError(err.Error()))
+			utils.ResponseError(c, err.Error())
 			c.Abort()
 			return
 		}
@@ -30,7 +30,7 @@ func TokenHandler() gin.HandlerFunc {
 		if tokenIsExpired(claims.ExpiresAt) {
 			// 不能自动刷新token, 需要重新登录
 			if !canRefreshToken(claims.IssuedAt) {
-				c.JSON(200, utils.ResponseJSON(common.CODE_RELOGIN, "登录已过期，请重新登录", nil))
+				utils.ResponseJSON(c, common.CODE_RELOGIN, "登录已过期，请重新登录", nil)
 				c.Abort()
 				return
 			}
@@ -38,7 +38,7 @@ func TokenHandler() gin.HandlerFunc {
 			tokenString, err := refreshToken(claims.UserId)
 			if err != nil {
 				// todo: log
-				c.JSON(200, utils.ResponseError("系统错误，请重试"))
+				utils.ResponseError(c, "系统错误，请重试")
 				c.Abort()
 				return
 			}
@@ -48,7 +48,6 @@ func TokenHandler() gin.HandlerFunc {
 		}
 
 		c.Set("userId", claims.UserId)
-
 		c.Next()
 	}
 }

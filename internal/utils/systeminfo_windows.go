@@ -23,15 +23,16 @@ func DiskInfo(path string) *DiskStatus {
 		}
 	}()
 
+	// windows下只需要传入盘符即可
 	path = path[0:2]
 
 	h := syscall.MustLoadDLL("kernel32.dll")
 	c := h.MustFindProc("GetDiskFreeSpaceExW")
 
 	var (
-		freeBytesAvailable     int64 // 当前用户可用容量
-		totalNumberOfBytes     int64 // 总容量
-		totalNumberOfFreeBytes int64 // 磁盘剩余容量
+		freeBytesAvailable     uint64 // 当前用户可用容量
+		totalNumberOfBytes     uint64 // 总容量
+		totalNumberOfFreeBytes uint64 // 磁盘剩余容量
 	)
 
 	// 第一个指针为 调用者可用的字节数量， 第二个指针为 磁盘总字节数 第三个指针为 磁盘可用的字节数
@@ -42,8 +43,8 @@ func DiskInfo(path string) *DiskStatus {
 	)
 
 	return &DiskStatus{
-		Total: uint64(totalNumberOfBytes),
-		Free:  uint64(freeBytesAvailable),
-		Used:  uint64(totalNumberOfBytes - freeBytesAvailable),
+		Free:  freeBytesAvailable,
+		Total: totalNumberOfBytes,
+		Used:  totalNumberOfBytes - freeBytesAvailable,
 	}
 }
