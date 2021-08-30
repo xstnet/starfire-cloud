@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/controllers"
 	"github.com/xstnet/starfire-cloud/internal/middleware"
+	"github.com/xstnet/starfire-cloud/internal/utils"
 )
 
 func SetupRouters() *gin.Engine {
@@ -66,6 +67,10 @@ func SetupRouters() *gin.Engine {
 		// }
 
 	}
+
+	r.NoRoute(func(c *gin.Context) {
+		utils.ResponseError(c, "无效的路由")
+	})
 
 	return r
 }

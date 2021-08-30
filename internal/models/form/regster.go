@@ -7,7 +7,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/xstnet/starfire-cloud/internal/db"
 	"github.com/xstnet/starfire-cloud/internal/models"
 )
 
@@ -60,11 +59,11 @@ func (r *RegisterForm) CheckParams() error {
 		return errors.New("邮箱格式不正确")
 	}
 
-	if res := db.DB.Where("username = ?", r.Username).First(&models.User{}); res.Error == nil {
+	if res := models.DB().Where("username = ?", r.Username).First(&models.User{}); res.Error == nil {
 		return errors.New("用户名已被占用")
 	}
 
-	if res := db.DB.Where("email = ?", r.Email).First(&models.User{}); res.Error == nil {
+	if res := models.DB().Where("email = ?", r.Email).First(&models.User{}); res.Error == nil {
 		return errors.New("邮箱已被占用")
 	}
 

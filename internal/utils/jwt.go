@@ -13,7 +13,7 @@ var TokenRemeberDuration = 86400 * 7 // 一定时间内免登录, todo: 后续�
 
 // jwt payload
 type MyJwtClaims struct {
-	UserId int `json:"userId"`
+	UserId uint `json:"userId"`
 	jwt.StandardClaims
 }
 
@@ -43,7 +43,7 @@ func (c MyJwtClaims) Valid() error {
 }
 
 // 生成JWT Token
-func GenerateToken(userId int) (string, error) {
+func GenerateToken(userId uint) (string, error) {
 	now := time.Now().Unix()
 	// payload
 	claims := MyJwtClaims{

@@ -4,13 +4,12 @@ import (
 	"log"
 
 	"github.com/xstnet/starfire-cloud/internal/common"
-	"github.com/xstnet/starfire-cloud/internal/db"
 	"github.com/xstnet/starfire-cloud/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	BaseField
+	BaseModel
 	Username   string `json:"username"`
 	Password   string `json:"password"`
 	Email      string `json:"email"`
@@ -22,7 +21,7 @@ type User struct {
 // 用户注册，写入到DB
 func (u *User) Register() error {
 	u.Password, _ = u.HashAndSalt(u.Password)
-	result := db.DB.Create(u)
+	result := u.DB().Create(u)
 	return result.Error
 }
 

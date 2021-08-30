@@ -64,7 +64,7 @@ func canRefreshToken(iat int64) bool {
 }
 
 // 自动刷新Token
-func refreshToken(userId int) (string, error) {
+func refreshToken(userId uint) (string, error) {
 	tokenString, err := utils.GenerateToken(userId)
 	return tokenString, err
 }

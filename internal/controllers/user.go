@@ -20,7 +20,7 @@ func Login(c *gin.Context) {
 	}
 
 	// 登录成功后下发Token和用户信息
-	tokenString, _ := utils.GenerateToken(int(user.ID))
+	tokenString, _ := utils.GenerateToken(user.ID)
 	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
 
 	utils.ResponseSuccess(c, "登录成功", &data)
@@ -50,7 +50,7 @@ func Register(c *gin.Context) {
 	}
 
 	// 注册成功直接下发token和用户信息，不需要进行登录
-	tokenString, _ := utils.GenerateToken(int(user.ID))
+	tokenString, _ := utils.GenerateToken(user.ID)
 	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
 
 	utils.ResponseSuccess(c, "注册成功", &data)

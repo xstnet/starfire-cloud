@@ -3,7 +3,6 @@ package form
 import (
 	"errors"
 
-	"github.com/xstnet/starfire-cloud/internal/db"
 	"github.com/xstnet/starfire-cloud/internal/models"
 )
 
@@ -23,7 +22,7 @@ func (l *LoginForm) Login() (*models.User, error) {
 
 	var user models.User
 
-	if res := db.DB.Where("username = ?", l.Username).First(&user); res.Error != nil {
+	if res := user.DB().Where("username = ?", l.Username).First(&user); res.Error != nil {
 		return nil, errors.New("用户不存在")
 	}
 
