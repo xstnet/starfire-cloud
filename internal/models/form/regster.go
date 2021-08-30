@@ -1,12 +1,12 @@
 package form
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 )
 

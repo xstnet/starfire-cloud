@@ -1,8 +1,9 @@
 package models
 
 import (
-	"errors"
 	"time"
+
+	"github.com/xstnet/starfire-cloud/internal/errors"
 )
 
 type UserFile struct {
@@ -27,7 +28,6 @@ const (
 )
 
 var scene = map[string][]interface{}{
-	"check_parentid": {"ID", "UserId"},                        // 检查归属文件夹是否存在
 	"check_samename": {"UserId", "ParentId", "IsDir", "Name"}, // 新建文件夹或上传文件时，检查同目录下是否有同名文件或文件夹
 }
 
@@ -47,10 +47,15 @@ func (uf *UserFile) Mkdir() error {
 		uf.CreatedAt, uf.UpdatedAt, uf.ID = 0, 0, 0
 	}
 
-	// 处理当前目录下是否有同名文件夹
 	uf.processSameName()
 
-	result := uf.DB().Create(&uf)
+	result := uf.DB().Create(uf)
+	return result.Error
+}
+
+func (uf *UserFile) Rename() error {
+	uf.processSameName()
+	result := uf.DB().Model(uf).Update("Name", uf.Name)
 	return result.Error
 }
 
@@ -58,7 +63,9 @@ func (uf *UserFile) Mkdir() error {
 func (uf *UserFile) checkParentId() error {
 	// 不是在根目录创建，需要验证归属文件夹是否属于当前用户
 	if uf.ParentId > 0 {
-		if result := uf.DB().Where(uf, uf.GetScene("check_parentid")...).First(uf); result.Error != nil {
+		var count int64
+		uf.DB().Model(uf).Where("id = ? AND user_id = ?", uf.ParentId, uf.UserId).Count(&count)
+		if count == 0 {
 			return errors.New("归属文件夹不存在")
 		}
 	}
@@ -71,7 +78,7 @@ func (uf *UserFile) checkParentId() error {
 // 不考虑在回收站的文件，一样当做同名处理
 func (uf *UserFile) processSameName() {
 	var count int64
-	uf.DB().Model(uf).Where(&uf, uf.GetScene("check_samename")...).Count(&count)
+	uf.DB().Model(uf).Where(uf, uf.GetScene("check_samename")...).Count(&count)
 	if count > 0 {
 		// eg: file_20210830_234812
 		// 若是同一秒内处理多个请求，可能会导致新文件名依然重复，由于是面象私有云，为性能考虑不处理

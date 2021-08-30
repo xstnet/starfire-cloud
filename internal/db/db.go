@@ -2,11 +2,15 @@ package db
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"sync"
+	"time"
 
 	"gorm.io/driver/mysql"
 	_ "gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -19,10 +23,23 @@ func init() {
 
 func initDb() {
 
-	config := &gorm.Config{NamingStrategy: schema.NamingStrategy{
-		TablePrefix: "sf_", // 表名前缀
-		// SingularTable: true,  // 使用单数表名
-	}}
+	logConfig := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
+		logger.Config{
+			SlowThreshold:             time.Nanosecond, // 慢 SQL 阈值
+			LogLevel:                  logger.Info,     // 日志级别
+			IgnoreRecordNotFoundError: false,           // 忽略ErrRecordNotFound（记录未找到）错误
+			Colorful:                  true,            // 是否启用彩色打印
+		},
+	)
+
+	config := &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "sf_", // 表名前缀
+			// SingularTable: true,  // 使用单数表名
+		},
+		Logger: logConfig,
+	}
 
 	db, err := gorm.Open(mysql.Open("root:root@tcp(127.0.0.1:3306)/starfire_cloud?charset=utf8mb4&parseTime=True&loc=Local"), config)
 

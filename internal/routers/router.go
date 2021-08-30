@@ -55,9 +55,10 @@ func SetupRouters() *gin.Engine {
 		}
 
 		// File operation
-		file := v1.Group("/file", middleware.TokenAuthHandler())
+		filemanager := v1.Group("/filemanager", middleware.TokenAuthHandler())
 		{
-			file.POST("/mkdir", controllers.Mkdir)
+			filemanager.POST("/mkdir", controllers.Mkdir)
+			filemanager.POST("/rename", controllers.Rename)
 		}
 
 		// 上传

@@ -2,7 +2,10 @@ package common
 
 import (
 	"fmt"
+	"regexp"
 	"time"
+
+	"github.com/xstnet/starfire-cloud/internal/errors"
 )
 
 func FormatFileSize(fileSize uint64) (size string) {
@@ -23,4 +26,26 @@ func FormatFileSize(fileSize uint64) (size string) {
 
 func FormatTimestamp(timestamp int64) string {
 	return time.Unix(int64(timestamp), 0).Format("2006-01-02 15:04:05")
+}
+
+func CheckDirname(dirname string) error {
+	if dirname == "" {
+		return errors.New("文件夹名称不能为空")
+	}
+	matched, err := regexp.MatchString(`^[^/\\\\:\\*\\?\\<\\>\\|\"]{1,255}$`, dirname)
+	if err != nil || !matched {
+		return errors.New(`文件夹名称不能包含\/:*?"<>|`)
+	}
+	return nil
+}
+
+func CheckFilename(filename string) error {
+	if filename == "" {
+		return errors.New("文件名称不能为空")
+	}
+	matched, err := regexp.MatchString(`^[^/\\\\:\\*\\?\\<\\>\\|\"]{1,255}$`, filename)
+	if err != nil || !matched {
+		return errors.New(`文件名称不能包含\/:*?"<>|`)
+	}
+	return nil
 }
