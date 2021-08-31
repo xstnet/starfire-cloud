@@ -60,6 +60,18 @@ func SetupRouters() *gin.Engine {
 			filemanager.POST("/mkdir", controllers.Mkdir)
 			filemanager.POST("/rename", controllers.Rename)
 			filemanager.POST("/move", controllers.Move)
+			filemanager.POST("/copy", controllers.Copy)
+			filemanager.POST("/delete", controllers.Delete)
+			filemanager.GET("/list", controllers.List)
+		}
+
+		// File operation
+		recycle := v1.Group("/recycle", middleware.TokenAuthHandler())
+		{
+			recycle.GET("/list", controllers.RecycleList)
+			recycle.POST("/delete", controllers.RecycleDelete)
+			recycle.POST("/restore", controllers.RecycleRestore)
+			recycle.POST("/clear", controllers.RecycleClear)
 		}
 
 		// 上传

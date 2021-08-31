@@ -5,6 +5,7 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/common"
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
+	"github.com/xstnet/starfire-cloud/internal/models/form"
 	"github.com/xstnet/starfire-cloud/internal/utils"
 )
 
@@ -93,4 +94,75 @@ func Move(c *gin.Context, userId uint) (*models.UserFile, error) {
 	}
 
 	return userFile, nil
+}
+
+// 获取文件列表
+func List(c *gin.Context, userId uint) (*gin.H, error) {
+	listForm := &form.FileList{}
+	if err := c.ShouldBind(listForm); err != nil {
+		return nil, errors.InvalidParameter()
+	}
+
+	limit, offset := common.ProcessPageByList(listForm.Page, listForm.PageSize, 200)
+
+	where := map[string]interface{}{
+		"user_id":   userId,
+		"parent_id": listForm.ParentId,
+		"is_delete": models.IS_DELETE_NO,
+	}
+
+	userFiles := make([]models.UserFile, limit+1)
+
+	// todo, 处理排序， 搜索
+	result := models.DB().Where(where).Order("is_dir desc").Order("updated_at desc").Limit(limit + 1).Offset(offset).Find(&userFiles)
+	if result.Error != nil {
+		return nil, errors.New("获取列表失败，原因：" + result.Error.Error())
+	}
+
+	more := 0
+
+	if result.RowsAffected <= 0 {
+		return &gin.H{"list": &userFiles, "more": more}, nil
+	}
+
+	// 如果获取到的元素大于pageSize,说明还有下一页
+	if result.RowsAffected > int64(limit) {
+		more = 1
+		userFiles = userFiles[:result.RowsAffected-1]
+	}
+
+	// 获取File信息写入到返回结果中
+	// var fileIds = make([]uint, 0, len(userFiles))
+
+	// for _, v := range userFiles {
+	// 	if v.FileId > 0 {
+	// 		fileIds = append(fileIds, v.FileId)
+	// 	}
+	// }
+
+	return &gin.H{
+		"list": &userFiles,
+		"more": more,
+		// "ids":  fileIds,
+	}, nil
+}
+
+// 删除
+// 只标记当前节点，不处理子元素，从回收站删除时再处理子元素
+func Delete(c *gin.Context, userId uint) (int64, error) {
+	var data = &form.FileIdList{}
+	if err := c.ShouldBind(data); err != nil {
+		return 0, errors.InvalidParameter()
+	}
+
+	result := models.DB().Model(&models.UserFile{}).
+		Where(data.FIdList).
+		Where("user_id = ? and is_delete=?", userId, models.IS_DELETE_NO).
+		Update("is_delete", 1)
+
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	return result.RowsAffected, nil
 }

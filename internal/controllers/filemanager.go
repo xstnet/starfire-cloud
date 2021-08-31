@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/services"
 	"github.com/xstnet/starfire-cloud/internal/utils"
@@ -32,11 +34,33 @@ func Rename(c *gin.Context) {
 }
 
 // 移动
+// todo ：支持选择多个文件
 func Move(c *gin.Context) {
+	// 开启事物， 循环处理即可， 多文件移动的场景很少
 	userFile, err := services.Move(c, c.GetUint("userId"))
 	if err != nil {
 		utils.ResponseError(c, err.Error())
 		return
 	}
 	utils.ResponseSuccess(c, "移动成功", &gin.H{"name": userFile.Name})
+}
+
+func List(c *gin.Context) {
+	data, err := services.List(c, c.GetUint("userId"))
+	if err != nil {
+		utils.ResponseError(c, err.Error())
+		return
+	}
+	utils.ResponseOk(c, &gin.H{"name": data})
+}
+
+func Copy(c *gin.Context) {}
+
+func Delete(c *gin.Context) {
+	rowsAffected, err := services.Delete(c, c.GetUint("userId"))
+	if err != nil {
+		utils.ResponseError(c, err.Error())
+		return
+	}
+	utils.ResponseSuccess(c, fmt.Sprintf("删除成功, %d条数据已放入回收站", rowsAffected), nil)
 }
