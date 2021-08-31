@@ -27,6 +27,16 @@ func Rename(c *gin.Context) {
 		utils.ResponseError(c, err.Error())
 		return
 	}
-	// 需要返回名称，可能会有同名文件导致重命名，因为前端需要使用后端最新的数据
+	// 需要返回名称，可能会有同名文件导致重命名，因此前端需要使用后端最新的数据
 	utils.ResponseSuccess(c, "重命名成功", &gin.H{"name": userFile.Name})
+}
+
+// 移动
+func Move(c *gin.Context) {
+	userFile, err := services.Move(c, c.GetUint("userId"))
+	if err != nil {
+		utils.ResponseError(c, err.Error())
+		return
+	}
+	utils.ResponseSuccess(c, "移动成功", &gin.H{"name": userFile.Name})
 }

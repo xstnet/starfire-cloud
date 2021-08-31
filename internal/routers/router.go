@@ -59,6 +59,7 @@ func SetupRouters() *gin.Engine {
 		{
 			filemanager.POST("/mkdir", controllers.Mkdir)
 			filemanager.POST("/rename", controllers.Rename)
+			filemanager.POST("/move", controllers.Move)
 		}
 
 		// 上传

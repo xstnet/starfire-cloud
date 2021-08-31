@@ -59,12 +59,23 @@ func (uf *UserFile) Rename() error {
 	return result.Error
 }
 
+// 移动
+func (uf *UserFile) Move() error {
+	if err := uf.checkParentId(); err != nil {
+		return err
+	}
+
+	uf.processSameName()
+	result := uf.DB().Model(uf).Select("parent_id", "name").Updates(uf)
+	return result.Error
+}
+
 // 创建文件夹前先校验归属
 func (uf *UserFile) checkParentId() error {
 	// 不是在根目录创建，需要验证归属文件夹是否属于当前用户
 	if uf.ParentId > 0 {
 		var count int64
-		uf.DB().Model(uf).Where("id = ? AND user_id = ?", uf.ParentId, uf.UserId).Count(&count)
+		uf.DB().Model(uf).Where("id = ? AND user_id = ? AND is_dir = ?", uf.ParentId, uf.UserId, IS_DIR_YES).Count(&count)
 		if count == 0 {
 			return errors.New("归属文件夹不存在")
 		}

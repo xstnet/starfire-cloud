@@ -52,12 +52,43 @@ func Rename(c *gin.Context, userId uint) (*models.UserFile, error) {
 	}
 
 	userFile := &models.UserFile{}
-	if result := userFile.DB().First(userFile, id); result.Error != nil || userFile.UserId != userId {
+	if result := userFile.DB().First(userFile, uint(id)); result.Error != nil || userFile.UserId != userId {
 		return nil, errors.New("操作对象不存在")
 	}
 
 	userFile.Name = newname
 	if err := userFile.Rename(); err != nil {
+		return nil, err
+	}
+
+	return userFile, nil
+}
+
+// 移动
+func Move(c *gin.Context, userId uint) (*models.UserFile, error) {
+	var data = make(gin.H, 4)
+	err := c.ShouldBindJSON(&data)
+
+	if err != nil {
+		return nil, errors.InvalidParameter()
+	}
+
+	fromId, ok := utils.GetFloat64(data["from_id"])
+	if !ok || fromId <= 0 {
+		return nil, errors.InvalidParameter()
+	}
+	destId, ok := utils.GetFloat64(data["dest_id"])
+	if !ok || destId <= 0 {
+		return nil, errors.InvalidParameter()
+	}
+
+	userFile := &models.UserFile{}
+	if result := userFile.DB().First(userFile, uint(fromId)); result.Error != nil || userFile.UserId != userId {
+		return nil, errors.New("操作对象不存在")
+	}
+
+	userFile.ParentId = uint(destId)
+	if err := userFile.Move(); err != nil {
 		return nil, err
 	}
 
