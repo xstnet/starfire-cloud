@@ -6,6 +6,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/xstnet/starfire-cloud/configs"
 	"gorm.io/driver/mysql"
 	_ "gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -34,13 +35,21 @@ func initDb() {
 
 	config := &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "sf_", // 表名前缀
+			TablePrefix: configs.Mysql.TablePrefix, // 表名前缀
 			// SingularTable: true,  // 使用单数表名
 		},
 		Logger: logConfig,
 	}
 
-	db, err := gorm.Open(mysql.Open("root:root@tcp(127.0.0.1:3306)/starfire_cloud?charset=utf8mb4&parseTime=True&loc=Local"), config)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
+		configs.Mysql.Username,
+		configs.Mysql.Password,
+		configs.Mysql.Host,
+		configs.Mysql.Port,
+		configs.Mysql.Database,
+		configs.Mysql.Charset,
+	)
+	db, err := gorm.Open(mysql.Open(dsn), config)
 
 	if err != nil {
 		fmt.Println("连接数据库失败")

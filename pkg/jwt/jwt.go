@@ -5,11 +5,10 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/xstnet/starfire-cloud/configs"
 )
 
-var jwtSecret = "EyIJSvCKbmlZbm9ysTpWkNaMAl122Sf7"
-
-var TokenRemeberDuration = 86400 * 7 // 一定时间内免登录, todo: 后续需要放入配置文件中
+var TokenRemeberDuration = configs.Jwt.RemeberDuration // 一定时间内免登录
 
 // jwt payload
 type MyJwtClaims struct {
@@ -59,7 +58,7 @@ func GenerateToken(userId uint) (string, error) {
 	}
 
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := tokenClaims.SignedString([]byte(jwtSecret))
+	token, err := tokenClaims.SignedString([]byte(configs.Jwt.Secret))
 
 	return token, err
 }
@@ -67,7 +66,7 @@ func GenerateToken(userId uint) (string, error) {
 // 解析校验JWT Token
 func ParseToken(token string) (*MyJwtClaims, error) {
 	tokenClaim, err := jwt.ParseWithClaims(token, &MyJwtClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(jwtSecret), nil
+		return []byte(configs.Jwt.Secret), nil
 	})
 	if err != nil {
 		return nil, err
