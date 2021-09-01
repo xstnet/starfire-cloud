@@ -5,23 +5,23 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xstnet/starfire-cloud/internal/common"
-	"github.com/xstnet/starfire-cloud/internal/utils"
+	"github.com/xstnet/starfire-cloud/pkg/jwt"
+	"github.com/xstnet/starfire-cloud/pkg/response"
 )
 
 func TokenAuthHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
 		if tokenString == "" {
-			utils.ResponseError(c, "请先登录后再操作")
+			response.Error(c, "请先登录后再操作")
 			c.Abort()
 			return
 		}
 
-		claims, err := utils.ParseToken(tokenString)
+		claims, err := jwt.ParseToken(tokenString)
 		if err != nil {
 			// 解析Token错误
-			utils.ResponseError(c, err.Error())
+			response.Error(c, err.Error())
 			c.Abort()
 			return
 		}
@@ -30,7 +30,7 @@ func TokenAuthHandler() gin.HandlerFunc {
 		if tokenIsExpired(claims.ExpiresAt) {
 			// 不能自动刷新token, 需要重新登录
 			if !canRefreshToken(claims.IssuedAt) {
-				utils.ResponseJSON(c, common.CODE_RELOGIN, "登录已过期，请重新登录", nil)
+				response.JSON(c, response.CODE_RELOGIN, "登录已过期，请重新登录", nil)
 				c.Abort()
 				return
 			}
@@ -38,7 +38,7 @@ func TokenAuthHandler() gin.HandlerFunc {
 			tokenString, err := refreshToken(claims.UserId)
 			if err != nil {
 				// todo: log
-				utils.ResponseError(c, "系统错误，请重试")
+				response.Error(c, "系统错误，请重试")
 				c.Abort()
 				return
 			}
@@ -55,16 +55,16 @@ func TokenAuthHandler() gin.HandlerFunc {
 // token是否已过期
 func tokenIsExpired(exp int64) bool {
 	return time.Now().Unix() > exp
-	// return iat+int64(utils.TokenRemeberDuration) > now
+	// return iat+int64(jwt.TokenRemeberDuration) > now
 }
 
 // 是否能自动刷新token
 func canRefreshToken(iat int64) bool {
-	return (iat+int64(utils.TokenRemeberDuration) > time.Now().Unix())
+	return (iat+int64(jwt.TokenRemeberDuration) > time.Now().Unix())
 }
 
 // 自动刷新Token
 func refreshToken(userId uint) (string, error) {
-	tokenString, err := utils.GenerateToken(userId)
+	tokenString, err := jwt.GenerateToken(userId)
 	return tokenString, err
 }

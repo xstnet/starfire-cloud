@@ -1,4 +1,4 @@
-package utils
+package jwt
 
 import (
 	"fmt"
@@ -50,8 +50,7 @@ func GenerateToken(userId uint) (string, error) {
 		UserId: userId,
 		StandardClaims: jwt.StandardClaims{
 			// token有效期，1天， 但是在TokenRemeberDuration时间内都可以免登录， 在最长TokenRemeberDuration之内都没有登录过， 则需要重新登录
-			// ExpiresAt: now + 86400,
-			ExpiresAt: now + 3,
+			ExpiresAt: now + 86400,
 			// 签发时间
 			IssuedAt: now,
 			// 发行人

@@ -6,7 +6,7 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/internal/utils"
+	"github.com/xstnet/starfire-cloud/pkg/convert"
 )
 
 // 创建文件夹
@@ -39,11 +39,11 @@ func Rename(c *gin.Context, userId uint) (*models.UserFile, error) {
 		return nil, errors.InvalidParameter()
 	}
 
-	id, ok := utils.GetFloat64(data["id"])
+	id, ok := convert.GetFloat64(data["id"])
 	if !ok || id <= 0 {
 		return nil, errors.InvalidParameter()
 	}
-	newname, ok := utils.GetString(data["newname"])
+	newname, ok := convert.GetString(data["newname"])
 	if !ok {
 		return nil, errors.InvalidParameter()
 	}
@@ -74,11 +74,11 @@ func Move(c *gin.Context, userId uint) (*models.UserFile, error) {
 		return nil, errors.InvalidParameter()
 	}
 
-	fromId, ok := utils.GetFloat64(data["from_id"])
+	fromId, ok := convert.GetFloat64(data["from_id"])
 	if !ok || fromId <= 0 {
 		return nil, errors.InvalidParameter()
 	}
-	destId, ok := utils.GetFloat64(data["dest_id"])
+	destId, ok := convert.GetFloat64(data["dest_id"])
 	if !ok || destId <= 0 {
 		return nil, errors.InvalidParameter()
 	}

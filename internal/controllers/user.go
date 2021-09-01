@@ -4,7 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/internal/utils"
+	"github.com/xstnet/starfire-cloud/pkg/jwt"
+	"github.com/xstnet/starfire-cloud/pkg/response"
 )
 
 // 登录
@@ -15,15 +16,15 @@ func Login(c *gin.Context) {
 	user, err := loginForm.Login()
 	// 登录失败
 	if err != nil {
-		utils.ResponseError(c, err.Error())
+		response.Error(c, err.Error())
 		return
 	}
 
 	// 登录成功后下发Token和用户信息
-	tokenString, _ := utils.GenerateToken(user.ID)
+	tokenString, _ := jwt.GenerateToken(user.ID)
 	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
 
-	utils.ResponseSuccess(c, "登录成功", &data)
+	response.Success(c, "登录成功", &data)
 }
 
 // 用户注册
@@ -33,7 +34,7 @@ func Register(c *gin.Context) {
 	c.ShouldBindJSON(&regForm)
 	err := regForm.CheckParams()
 	if err != nil {
-		utils.ResponseError(c, err.Error())
+		response.Error(c, err.Error())
 		return
 	}
 
@@ -45,15 +46,15 @@ func Register(c *gin.Context) {
 		Password: regForm.Password,
 	}
 	if err := user.Register(); err != nil {
-		utils.ResponseError(c, "注册失败, 原因："+err.Error())
+		response.Error(c, "注册失败, 原因："+err.Error())
 		return
 	}
 
 	// 注册成功直接下发token和用户信息，不需要进行登录
-	tokenString, _ := utils.GenerateToken(user.ID)
+	tokenString, _ := jwt.GenerateToken(user.ID)
 	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
 
-	utils.ResponseSuccess(c, "注册成功", &data)
+	response.Success(c, "注册成功", &data)
 }
 func GetProfile(c *gin.Context)     {}
 func UpdateProfile(c *gin.Context)  {}

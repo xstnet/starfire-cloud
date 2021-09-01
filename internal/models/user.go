@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/xstnet/starfire-cloud/internal/common"
-	"github.com/xstnet/starfire-cloud/internal/utils"
+	"github.com/xstnet/starfire-cloud/pkg/systeminfo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -46,9 +46,9 @@ func (u *User) ComparePasswords(password string) bool {
 // 用户信息转化
 func (u *User) ToDetail() map[string]interface{} {
 	// 处理总存储空间
-	diskInfo := utils.DiskInfo("E:")
+	diskInfo := systeminfo.DiskInfo("E:")
 	if diskInfo == nil {
-		diskInfo = &utils.DiskStatus{}
+		diskInfo = &systeminfo.DiskStatus{}
 	}
 
 	return map[string]interface{}{
