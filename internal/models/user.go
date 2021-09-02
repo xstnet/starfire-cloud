@@ -35,12 +35,21 @@ func (u *User) HashAndSalt(pwd string) (string, error) {
 // 比对用户密码是否正确
 // DefaultCost=10, 大约耗时40-50ms
 func (u *User) ComparePasswords(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	if err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		log.Println(err)
 		return false
 	}
 	return true
+}
+
+// Get
+func (u *User) GetUserById(id uint) error {
+	err := u.DB().Where(id).First(u).Error
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
 // 用户信息转化

@@ -56,7 +56,17 @@ func Register(c *gin.Context) {
 
 	response.Success(c, "注册成功", &data)
 }
-func GetProfile(c *gin.Context)     {}
+
+// 获取用户信息
+func GetProfile(c *gin.Context) {
+	user := &models.User{}
+	if err := user.GetUserById(c.GetUint("userId")); err != nil {
+		response.Error(c, "用户不存在")
+		return
+	}
+	response.OkWithData(c, gin.H{"profile": user.ToDetail()})
+}
+
 func UpdateProfile(c *gin.Context)  {}
 func ChangePassword(c *gin.Context) {}
 func ChangeAvatar(c *gin.Context)   {}

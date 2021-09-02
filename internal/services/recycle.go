@@ -18,6 +18,9 @@ func RecycleRestore(c *gin.Context, userId uint) (int64, error) {
 		Where("user_id = ? and is_delete=?", userId, models.IS_DELETE_YES).
 		Update("is_delete", 0)
 
+	// c.ShouldBindBodyWith()
+	// binding.JSON.BindBody()
+
 	if result.Error != nil {
 		return 0, result.Error
 	}
