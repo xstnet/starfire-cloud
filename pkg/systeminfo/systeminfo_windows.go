@@ -4,6 +4,7 @@ package systeminfo
 
 import (
 	"fmt"
+	"path/filepath"
 	"syscall"
 	"unsafe"
 )
@@ -24,7 +25,7 @@ func DiskInfo(path string) *DiskStatus {
 	}()
 
 	// windows下只需要传入盘符即可
-	path = path[0:2]
+	path = filepath.VolumeName(path)
 
 	h := syscall.MustLoadDLL("kernel32.dll")
 	c := h.MustFindProc("GetDiskFreeSpaceExW")

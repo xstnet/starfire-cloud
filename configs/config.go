@@ -11,6 +11,10 @@ type ServerConfig struct {
 	Port uint   `ini:"port"`
 }
 
+type UploadConfig struct {
+	UploadRootPath string `ini:"upload_root_path"`
+}
+
 type MysqlConfig struct {
 	Host        string `ini:"host"`
 	Username    string `ini:"username"`
@@ -29,6 +33,7 @@ type JwtConfig struct {
 // 逐个加载，方便使用
 var (
 	Server = &ServerConfig{}
+	Upload = &UploadConfig{}
 	Mysql  = &MysqlConfig{}
 	Jwt    = &JwtConfig{}
 )
@@ -52,6 +57,9 @@ func Load() {
 	}
 
 	if err = cfg.Section("mysql").MapTo(Mysql); err != nil {
+		panic("加载配置文件失败，原因： " + err.Error())
+	}
+	if err = cfg.Section("upload").MapTo(Upload); err != nil {
 		panic("加载配置文件失败，原因： " + err.Error())
 	}
 	if err = cfg.Section("jwt").MapTo(Jwt); err != nil {
