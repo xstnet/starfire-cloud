@@ -71,3 +71,8 @@ func (u *User) ToDetail() map[string]interface{} {
 		"register_time": common.FormatTimestamp(int64(u.CreatedAt)),
 	}
 }
+
+func (u *User) ChangePassword() error {
+	u.Password, _ = u.HashAndSalt(u.Password)
+	return u.DB().Model(u).Update("password", u.Password).Error
+}

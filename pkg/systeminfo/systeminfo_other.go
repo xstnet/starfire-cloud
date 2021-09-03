@@ -4,9 +4,7 @@ package systeminfo
 
 import (
 	"fmt"
-	"runtime"
 	"syscall"
-	"unsafe"
 )
 
 type DiskStatus struct {
