@@ -96,3 +96,7 @@ func (uf *UserFile) processSameName() {
 		uf.Name += "_" + time.Unix(int64(time.Now().Unix()), 0).Format("20060102_150405")
 	}
 }
+
+func (uf *UserFile) BindFile() error {
+	return uf.DB().Create(uf).Error
+}

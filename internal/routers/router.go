@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/controllers"
@@ -9,9 +10,17 @@ import (
 	"github.com/xstnet/starfire-cloud/pkg/response"
 )
 
+// todo panic时对前端返回系统错误
+
 func SetupRouters() *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.RequestCostHandler(), gin.Logger(), gin.Recovery())
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Fatalln("请求处理Pannic: ", err)
+		}
+	}()
 
 	// r.Use(middleware.TokenHandler())
 
@@ -78,6 +87,7 @@ func SetupRouters() *gin.Engine {
 		upload := v1.Group("/upload", middleware.TokenAuthHandler())
 		{
 			upload.POST("/batch", middleware.TokenAuthHandler(), controllers.BatchUpload)
+			upload.POST("/file", middleware.TokenAuthHandler(), controllers.UploadFile)
 			upload.POST("/pre-upload", middleware.TokenAuthHandler(), controllers.PreUpload)
 		}
 

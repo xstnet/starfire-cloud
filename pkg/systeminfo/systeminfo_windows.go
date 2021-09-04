@@ -17,9 +17,11 @@ type DiskStatus struct {
 
 // windows 获取磁盘信息
 // 不能保证100%获取成功， 获取不到时返回 nil
-func DiskInfo(path string) *DiskStatus {
+func DiskInfo(path string) (diskInfo *DiskStatus) {
 	defer func() {
 		if err := recover(); err != nil {
+			// panic时也要返回初值
+			diskInfo = &DiskStatus{}
 			fmt.Println("Get DiskInfo Panic:", err)
 		}
 	}()
@@ -43,9 +45,11 @@ func DiskInfo(path string) *DiskStatus {
 		uintptr(unsafe.Pointer(&totalNumberOfFreeBytes)), // 指针3
 	)
 
-	return &DiskStatus{
+	diskInfo = &DiskStatus{
 		Free:  freeBytesAvailable,
 		Total: totalNumberOfBytes,
 		Used:  totalNumberOfBytes - freeBytesAvailable,
 	}
+
+	return
 }

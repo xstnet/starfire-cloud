@@ -1,6 +1,8 @@
 package configs
 
 import (
+	"os"
+	"path/filepath"
 	"sync"
 
 	"gopkg.in/ini.v1"
@@ -49,20 +51,32 @@ func init() {
 func Load() {
 	cfg, err := ini.Load("configs/config.ini")
 	if err != nil {
-		panic("加载配置文件失败，原因： " + err.Error())
+		panic("加载配置文件失败: " + err.Error())
 	}
 
 	if err = cfg.Section("server").MapTo(Server); err != nil {
-		panic("加载配置文件失败，原因： " + err.Error())
+		panic("加载配置文件失败: " + err.Error())
 	}
 
 	if err = cfg.Section("mysql").MapTo(Mysql); err != nil {
-		panic("加载配置文件失败，原因： " + err.Error())
+		panic("加载配置文件失败: " + err.Error())
 	}
+
 	if err = cfg.Section("upload").MapTo(Upload); err != nil {
-		panic("加载配置文件失败，原因： " + err.Error())
+		panic("加载配置文件失败: " + err.Error())
 	}
+
+	// 如果没有配置上传文件的根目录， 默认存储在程序运行目录下的 /uploads下面
+	// todo, 检查是否有该目录的写入权限
+	if Upload.UploadRootPath == "" {
+		currentPath, err := os.Getwd()
+		if err != nil {
+			panic("获取运行目录失败：" + err.Error())
+		}
+		Upload.UploadRootPath = filepath.Join(currentPath, "/uploads")
+	}
+
 	if err = cfg.Section("jwt").MapTo(Jwt); err != nil {
-		panic("加载配置文件失败，原因： " + err.Error())
+		panic("加载配置文件失败: " + err.Error())
 	}
 }

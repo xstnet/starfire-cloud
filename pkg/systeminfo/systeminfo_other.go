@@ -16,9 +16,11 @@ type DiskStatus struct {
 }
 
 // Linux 获取磁盘信息
-func DiskInfo(path string) *DiskStatus {
+func DiskInfo(path string) (diskInfo *DiskStatus) {
 	defer func() {
 		if err := recover(); err != nil {
+			// panic时也要返回初值
+			diskInfo = &DiskStatus{}
 			fmt.Println("Get DiskInfo Panic:", err)
 		}
 	}()
@@ -32,11 +34,11 @@ func DiskInfo(path string) *DiskStatus {
 		return &DiskStatus{}
 	}
 
-	t := &DiskStatus{
+	diskInfo = &DiskStatus{
 		Total: fs.Blocks * uint64(fs.Bsize),
 		Free:  fs.Bfree * uint64(fs.Bsize),
 		Used:  0,
 	}
-	t.Used = t.Total - t.Free
-	return t
+	diskInfo.Used = diskInfo.Total - diskInfo.Free
+	return
 }
