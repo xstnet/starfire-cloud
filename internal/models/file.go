@@ -1,5 +1,9 @@
 package models
 
+import (
+	"strings"
+)
+
 type File struct {
 	BaseModel
 	Md5      string `json:"md5"`
@@ -81,4 +85,21 @@ func (f *File) GetFileByMd5(md5 string) bool {
 func (f *File) IncRef() error {
 	f.RefCount++
 	return f.DB().Model(f).Update("ref_count", f.RefCount).Error
+}
+
+// 已上传成功,  入库
+func (f *File) Create(userId uint, size uint64, md5, path, ext, mimeType string) error {
+	f.Size = size
+	f.Md5 = md5
+	f.Extend = ext
+	f.OwnId = userId
+	f.RefCount = 1
+	f.MimeType = mimeType
+
+	// 将windows下路径分隔符替换成Unix形式入库
+	f.Path = strings.ReplaceAll(path, "\\", "/")
+	// 没有值时将会使用空值也就是0，0即是Other
+	f.Kind = Ext2kind[ext]
+
+	return f.DB().Model(f).Create(f).Error
 }

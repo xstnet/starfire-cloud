@@ -21,16 +21,21 @@ import (
 )
 
 func UploadFile(c *gin.Context, userId uint) error {
-	fileModel := &models.File{}
-	fileModel.GetFileByMd5("")
+	targetId, err := strconv.Atoi(c.PostForm("target_id"))
+
+	if err != nil || targetId < 0 {
+		return errors.InvalidParameter()
+	}
+
 	file, err := c.FormFile("file")
 	if err != nil {
 		return err
 	}
 
-	err = saveSingleFile(c, userId, 1, file)
+	err = saveSingleFile(c, userId, targetId, file)
+	fmt.Println(err)
 
-	return nil
+	return err
 }
 
 // 暂不使用
@@ -101,17 +106,10 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 	if err := user.GetUserById(userId); err != nil {
 		return errors.New("用户不存在")
 	}
-	// 判断用户的剩余空间是否足够
-	if user.TotalSpace > 0 && user.TotalSpace-user.UsedSpace < uint64(file.Size) {
-		return errors.New("剩余存储空间不足")
-	}
-	// 判断磁盘余量
-	diskInfo := systeminfo.DiskInfo(configs.Upload.UploadRootPath)
-	if diskInfo.Total == 0 {
-		return errors.New("获取磁盘信息失败")
-	}
-	if diskInfo.Free < uint64(file.Size) {
-		return errors.New("磁盘剩余空间不足，当前余量: " + common.FormatFileSize(diskInfo.Free))
+	fmt.Println(user)
+	// 检查余量
+	if err := checkRemainSpace(user, uint64(file.Size)); err != nil {
+		return err
 	}
 
 	// 使用文件内容的MD5值做为文件名
@@ -134,31 +132,17 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 
 		fullPath := filepath.Join(relativePath, md5Str+"."+ext)
 
+		// 上传
 		err = c.SaveUploadedFile(file, filepath.Join(configs.Upload.UploadRootPath, fullPath))
 		if err != nil {
 			return err
 		}
-		// 已上传成功
-		// 保存文件信息到库中
-		fileModel.Size = uint64(file.Size)
-		fileModel.Md5 = md5Str
-		fileModel.Extend = ext
-		fileModel.OwnId = userId
-		// 将windows下路径分隔符替换成Unix形式入库
-		fileModel.Path = strings.ReplaceAll(fullPath, "\\", "/")
-		kind, ok := models.Ext2kind[ext]
-		if ok {
-			fileModel.Kind = kind
-		} else {
-			kind = models.KIND_OTHER
-		}
-		// content-type:text/plain;charset=xxx, charset就是1， 只取0
-		fileModel.MimeType = file.Header["Content-Type"][0]
-
-		// save
-		if err = fileModel.DB().Model(fileModel).Create(fileModel).Error; err != nil {
+		// 入库
+		err = fileModel.Create(userId, uint64(file.Size), md5Str, fullPath, ext, file.Header["Content-Type"][0])
+		if err != nil {
 			return err
 		}
+
 	} else {
 		// 更新引用数量
 		fileModel.IncRef()
@@ -180,5 +164,22 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 		return err
 	}
 
+	return nil
+}
+
+// 检查剩余的存储空间是否足够
+func checkRemainSpace(user *models.User, size uint64) error {
+	// 判断用户的剩余空间是否足够
+	if user.TotalSpace > 0 && user.TotalSpace-user.UsedSpace < size {
+		return errors.New("可用上传空间不足，当前剩余: " + common.FormatFileSize(user.TotalSpace-user.UsedSpace))
+	}
+	// 判断磁盘余量
+	diskInfo := systeminfo.DiskInfo(configs.Upload.UploadRootPath)
+	if diskInfo.Total == 0 {
+		return errors.New("获取磁盘信息失败")
+	}
+	if diskInfo.Free < size {
+		return errors.New("磁盘剩余空间不足，当前余量: " + common.FormatFileSize(diskInfo.Free))
+	}
 	return nil
 }

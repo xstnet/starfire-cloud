@@ -2,7 +2,6 @@ package routers
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/controllers"
@@ -15,12 +14,6 @@ import (
 func SetupRouters() *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.RequestCostHandler(), gin.Logger(), gin.Recovery())
-
-	defer func() {
-		if err := recover(); err != nil {
-			log.Fatalln("请求处理Pannic: ", err)
-		}
-	}()
 
 	// r.Use(middleware.TokenHandler())
 
@@ -74,7 +67,7 @@ func SetupRouters() *gin.Engine {
 			filemanager.GET("/list", controllers.List)
 		}
 
-		// File operation
+		// Recycle File operation
 		recycle := v1.Group("/recycle", middleware.TokenAuthHandler())
 		{
 			recycle.GET("/list", controllers.RecycleList)
