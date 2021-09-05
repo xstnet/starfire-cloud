@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
@@ -85,9 +84,6 @@ func ChangePassword(c *gin.Context) {
 		response.Error(c, "参数错误")
 		return
 	}
-
-	fmt.Println("原密码", json["source_password"])
-	fmt.Println("模型", user)
 
 	if !user.ComparePasswords(json["source_password"].(string)) {
 		response.Error(c, "原密码错误")
