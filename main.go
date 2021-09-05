@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 
+	_ "github.com/xstnet/starfire-cloud/boot"
 	"github.com/xstnet/starfire-cloud/configs"
-	_ "github.com/xstnet/starfire-cloud/configs"
-	_ "github.com/xstnet/starfire-cloud/internal/db"
 	"github.com/xstnet/starfire-cloud/internal/routers"
 )
 
