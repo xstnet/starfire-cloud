@@ -4,6 +4,7 @@ package systeminfo
 
 import (
 	"fmt"
+	"path/filepath"
 	"syscall"
 	"unsafe"
 )
@@ -16,15 +17,17 @@ type DiskStatus struct {
 
 // windows 获取磁盘信息
 // 不能保证100%获取成功， 获取不到时返回 nil
-func DiskInfo(path string) *DiskStatus {
+func DiskInfo(path string) (diskInfo *DiskStatus) {
 	defer func() {
 		if err := recover(); err != nil {
+			// panic时也要返回初值
+			diskInfo = &DiskStatus{}
 			fmt.Println("Get DiskInfo Panic:", err)
 		}
 	}()
 
 	// windows下只需要传入盘符即可
-	path = path[0:2]
+	path = filepath.VolumeName(path)
 
 	h := syscall.MustLoadDLL("kernel32.dll")
 	c := h.MustFindProc("GetDiskFreeSpaceExW")
@@ -42,9 +45,11 @@ func DiskInfo(path string) *DiskStatus {
 		uintptr(unsafe.Pointer(&totalNumberOfFreeBytes)), // 指针3
 	)
 
-	return &DiskStatus{
+	diskInfo = &DiskStatus{
 		Free:  freeBytesAvailable,
 		Total: totalNumberOfBytes,
 		Used:  totalNumberOfBytes - freeBytesAvailable,
 	}
+
+	return
 }

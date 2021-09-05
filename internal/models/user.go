@@ -3,6 +3,7 @@ package models
 import (
 	"log"
 
+	"github.com/xstnet/starfire-cloud/configs"
 	"github.com/xstnet/starfire-cloud/internal/common"
 	"github.com/xstnet/starfire-cloud/pkg/systeminfo"
 	"golang.org/x/crypto/bcrypt"
@@ -52,14 +53,15 @@ func (u *User) GetUserById(id uint) error {
 	return nil
 }
 
+func (u *User) UpdateUsedSpace(size uint64) error {
+	u.UsedSpace += size
+	return u.DB().Model(u).Update("used_space", u.UsedSpace).Error
+}
+
 // 用户信息转化
 func (u *User) ToDetail() map[string]interface{} {
 	// 处理总存储空间
-	diskInfo := systeminfo.DiskInfo("E:")
-	if diskInfo == nil {
-		diskInfo = &systeminfo.DiskStatus{}
-	}
-
+	diskInfo := systeminfo.DiskInfo(configs.Upload.UploadRootPath)
 	return map[string]interface{}{
 		"id":            u.ID,
 		"username":      u.Username,

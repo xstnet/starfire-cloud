@@ -9,6 +9,8 @@ import (
 	"github.com/xstnet/starfire-cloud/pkg/response"
 )
 
+// todo panic时对前端返回系统错误
+
 func SetupRouters() *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.RequestCostHandler(), gin.Logger(), gin.Recovery())
@@ -65,7 +67,7 @@ func SetupRouters() *gin.Engine {
 			filemanager.GET("/list", controllers.List)
 		}
 
-		// File operation
+		// Recycle File operation
 		recycle := v1.Group("/recycle", middleware.TokenAuthHandler())
 		{
 			recycle.GET("/list", controllers.RecycleList)
@@ -75,10 +77,12 @@ func SetupRouters() *gin.Engine {
 		}
 
 		// 上传
-		// upload := v1.Group("/upload", middleware.TokenAuthHandler())
-		// {
-		// 	upload.POST("/single-file", middleware.TokenAuthHandler())
-		// }
+		upload := v1.Group("/upload", middleware.TokenAuthHandler())
+		{
+			upload.POST("/batch", middleware.TokenAuthHandler(), controllers.BatchUpload)
+			upload.POST("/file", middleware.TokenAuthHandler(), controllers.UploadFile)
+			upload.POST("/pre-upload", middleware.TokenAuthHandler(), controllers.PreUpload)
+		}
 
 	}
 
