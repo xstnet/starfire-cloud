@@ -17,12 +17,12 @@ func BatchUpload(c *gin.Context) {
 }
 
 func UploadFile(c *gin.Context) {
-	err := services.UploadFile(c, c.GetUint("userId"))
+	data, err := services.UploadFile(c, c.GetUint("userId"))
 	if err != nil {
 		response.Error(c, "上传失败, "+err.Error())
 		return
 	}
-	response.Success(c, "上传成功", nil)
+	response.Success(c, "上传成功", &data)
 }
 
 func PreUpload(c *gin.Context) {

@@ -20,22 +20,19 @@ import (
 	"github.com/xstnet/starfire-cloud/pkg/systeminfo"
 )
 
-func UploadFile(c *gin.Context, userId uint) error {
+func UploadFile(c *gin.Context, userId uint) (map[string]interface{}, error) {
 	targetId, err := strconv.Atoi(c.PostForm("target_id"))
 
 	if err != nil || targetId < 0 {
-		return errors.InvalidParameter()
+		return nil, errors.InvalidParameter()
 	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = saveSingleFile(c, userId, targetId, file)
-	fmt.Println(err)
-
-	return err
+	return saveSingleFile(c, userId, targetId, file)
 }
 
 // 暂不使用
@@ -56,7 +53,7 @@ func BatchUpload(c *gin.Context, userId uint) error {
 	}
 
 	for _, file := range files {
-		err := saveSingleFile(c, userId, targetId, file)
+		_, err := saveSingleFile(c, userId, targetId, file)
 		if err != nil {
 			return err
 		}
@@ -93,29 +90,29 @@ func getAndCreateSavePath(userId uint) (relativePath string, err error) {
 	return
 }
 
-func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.FileHeader) error {
+func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.FileHeader) (map[string]interface{}, error) {
 	// 检查文件名是否合法
 	if err := common.CheckFilename(file.Filename); err != nil {
-		return errors.InvalidParameter()
+		return nil, errors.InvalidParameter()
 	}
 	if len(file.Header["Content-Type"]) < 1 || file.Size < 0 {
-		return errors.InvalidParameter()
+		return nil, errors.InvalidParameter()
 	}
 
 	user := &models.User{}
 	if err := user.GetUserById(userId); err != nil {
-		return errors.New("用户不存在")
+		return nil, errors.New("用户不存在")
 	}
 	fmt.Println(user)
 	// 检查余量
 	if err := checkRemainSpace(user, uint64(file.Size)); err != nil {
-		return err
+		return nil, err
 	}
 
 	// 使用文件内容的MD5值做为文件名
 	md5Str, err := getUploadFileMd5(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// 检查文件是否已存在
@@ -127,7 +124,7 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 
 		relativePath, err := getAndCreateSavePath(userId)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		fullPath := filepath.Join(relativePath, md5Str+"."+ext)
@@ -135,12 +132,12 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 		// 上传
 		err = c.SaveUploadedFile(file, filepath.Join(configs.Upload.UploadRootPath, fullPath))
 		if err != nil {
-			return err
+			return nil, err
 		}
 		// 入库
 		err = fileModel.Create(userId, uint64(file.Size), md5Str, fullPath, ext, file.Header["Content-Type"][0])
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 	} else {
@@ -157,14 +154,22 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 		IsDir:    models.IS_DIR_NO,
 	}
 	if err := userFile.BindFile(); err != nil {
-		return err
+		return nil, err
 	}
 	// 更新用户的存储空间
 	if err := user.UpdateUsedSpace(fileModel.Size); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	data := map[string]interface{}{
+		"id":    userFile.ID,
+		"md5":   fileModel.Md5,
+		"name":  userFile.Name,
+		"kind":  fileModel.Kind,
+		"ext":   fileModel.Extend,
+		"thumb": "", // todo: 返回每种文件格式对应的缩略图url
+	}
+	return data, nil
 }
 
 // 检查剩余的存储空间是否足够

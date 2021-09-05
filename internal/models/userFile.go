@@ -92,19 +92,21 @@ func (uf *UserFile) checkParentId() error {
 func (uf *UserFile) processSameName() {
 	var count int64
 	uf.DB().Model(uf).Where(uf, uf.GetScene("check_samename")...).Count(&count)
-	if count > 0 {
-		// 如果是文件， 需要处理一下扩展名
-		var ext string
-		if uf.IsDir == IS_DIR_NO {
-			ext = filepath.Ext(uf.Name)
-			uf.Name = strings.TrimSuffix(uf.Name, ext)
-		}
-		// eg: file_20210830_234812
-		// 若是同一秒内处理多个请求，可能会导致新文件名依然重复，由于是面象私有云，为性能考虑不处理
-		uf.Name += "_" + time.Unix(int64(time.Now().Unix()), 0).Format("20060102_150405")
-		// 针对文件添加扩展名
-		uf.Name += ext
+	if count <= 0 {
+		return
 	}
+
+	// 如果是文件， 需要处理一下扩展名
+	var ext string
+	if uf.IsDir == IS_DIR_NO {
+		ext = filepath.Ext(uf.Name)
+		uf.Name = strings.TrimSuffix(uf.Name, ext)
+	}
+	// eg: file_20210830_234812
+	// 若是同一秒内处理多个请求，可能会导致新文件名依然重复，由于是面象私有云，为性能考虑不处理
+	uf.Name += "_" + time.Unix(int64(time.Now().Unix()), 0).Format("20060102_150405")
+	// 针对文件添加扩展名
+	uf.Name += ext
 }
 
 func (uf *UserFile) BindFile() error {
