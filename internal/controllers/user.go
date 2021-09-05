@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
@@ -78,25 +79,33 @@ func ChangePassword(c *gin.Context) {
 		response.Error(c, "用户不存在")
 		return
 	}
+	json := make(gin.H, 3)
+	err := c.BindJSON(&json)
+	if err != nil {
+		response.Error(c, "参数错误")
+		return
+	}
 
-	sourcePassword := c.GetString("source_password")
-	if !user.ComparePasswords(sourcePassword) {
+	fmt.Println("原密码", json["source_password"])
+	fmt.Println("模型", user)
+
+	if !user.ComparePasswords(json["source_password"].(string)) {
 		response.Error(c, "原密码错误")
 		return
 	}
 
-	if c.GetString("password") != c.GetString("password_repeat") {
+	if json["password"] != json["password_repeat"] {
 		response.Error(c, "两次密码输入不一致")
 		return
 	}
 
 	reg := regexp.MustCompile(`^\S{5,30}$`)
-	if !reg.MatchString(c.GetString("password")) {
+	if !reg.MatchString(json["password"].(string)) {
 		response.Error(c, "密码不能包含空格, 且长度在5-20位之间")
 		return
 	}
-	user.Password = c.GetString("password")
-	err := user.ChangePassword()
+	user.Password = json["password"].(string)
+	err = user.ChangePassword()
 	if err != nil {
 		response.Error(c, "修改密码出错，请稍后重试")
 		return
