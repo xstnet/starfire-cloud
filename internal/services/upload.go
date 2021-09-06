@@ -38,8 +38,8 @@ func UploadFile(c *gin.Context, userId uint) (*map[string]interface{}, error) {
 
 // 上传前的一些检查操作
 func PreUpload(c *gin.Context, userId uint) (*map[string]interface{}, error) {
-	preUploadForm := form.PreUpload{}
-	if err := c.ShouldBindJSON(&preUploadForm); err != nil {
+	dataForm := form.PreUpload{}
+	if err := c.ShouldBindJSON(&dataForm); err != nil {
 		return nil, errors.InvalidParameter()
 	}
 
@@ -48,14 +48,14 @@ func PreUpload(c *gin.Context, userId uint) (*map[string]interface{}, error) {
 		return nil, errors.New("用户不存在")
 	}
 	// 检查余量
-	if err := checkRemainSpace(user, preUploadForm.Size); err != nil {
+	if err := checkRemainSpace(user, dataForm.Size); err != nil {
 		return nil, err
 	}
 
 	// 检查文检是否已存在
 	var exist uint8
 	fileModel := &models.File{}
-	if ok := fileModel.GetFileByMd5(preUploadForm.Md5); ok {
+	if ok := fileModel.GetFileByMd5(dataForm.Md5); ok {
 		exist = 1
 	}
 
@@ -63,6 +63,33 @@ func PreUpload(c *gin.Context, userId uint) (*map[string]interface{}, error) {
 		"exist": exist,
 	}, nil
 
+}
+
+// 秒传
+func Instant(c *gin.Context, userId uint) (*map[string]interface{}, error) {
+	dataForm := form.Instant{}
+	if err := c.ShouldBindJSON(&dataForm); err != nil {
+		return nil, errors.InvalidParameter()
+	}
+
+	user := &models.User{}
+	if err := user.GetUserById(userId); err != nil {
+		return nil, errors.New("用户不存在")
+	}
+
+	// 检查文检是否已存在
+	fileModel := &models.File{}
+	if ok := fileModel.GetFileByMd5(dataForm.Md5); !ok {
+		return nil, errors.New("文件不存在")
+	}
+
+	// 检查余量
+	if err := checkRemainSpace(user, fileModel.Size); err != nil {
+		return nil, err
+	}
+
+	fileModel.IncRef()
+	return bindUserFile(user, fileModel, dataForm.TargetId, dataForm.Name)
 }
 
 // 暂不使用
@@ -133,7 +160,7 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 	if err := user.GetUserById(userId); err != nil {
 		return nil, errors.New("用户不存在")
 	}
-	fmt.Println(user)
+
 	// 检查余量
 	if err := checkRemainSpace(user, uint64(file.Size)); err != nil {
 		return nil, err
@@ -175,11 +202,15 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 		fileModel.IncRef()
 	}
 
+	return bindUserFile(user, fileModel, uint(targetId), file.Filename)
+}
+
+func bindUserFile(user *models.User, file *models.File, targetId uint, showName string) (*map[string]interface{}, error) {
 	// 将文件对象绑定到用户的文件
 	userFile := &models.UserFile{
-		UserId:   userId,
-		FileId:   fileModel.ID,
-		Name:     file.Filename,
+		UserId:   user.ID,
+		FileId:   file.ID,
+		Name:     showName,
 		ParentId: uint(targetId),
 		IsDir:    models.IS_DIR_NO,
 	}
@@ -187,17 +218,16 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 		return nil, err
 	}
 	// 更新用户的存储空间
-	if err := user.UpdateUsedSpace(fileModel.Size); err != nil {
+	if err := user.UpdateUsedSpace(file.Size); err != nil {
 		return nil, err
 	}
 
 	data := map[string]interface{}{
-		"id":    userFile.ID,
-		"md5":   fileModel.Md5,
-		"name":  userFile.Name,
-		"kind":  fileModel.Kind,
-		"ext":   fileModel.Extend,
-		"thumb": "", // todo: 返回每种文件格式对应的缩略图url
+		"id":   userFile.ID,
+		"md5":  file.Md5,
+		"name": userFile.Name,
+		"kind": file.Kind,
+		"ext":  file.Extend,
 	}
 	return &data, nil
 }

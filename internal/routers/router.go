@@ -82,6 +82,8 @@ func SetupRouters() *gin.Engine {
 			upload.POST("/batch", controllers.BatchUpload)
 			upload.POST("/file", controllers.UploadFile)
 			upload.POST("/pre-upload", controllers.PreUpload)
+			// 秒传api
+			upload.POST("/instant", controllers.Instant)
 		}
 
 	}

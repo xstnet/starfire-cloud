@@ -87,6 +87,13 @@ func (f *File) IncRef() error {
 	return f.DB().Model(f).Update("ref_count", f.RefCount).Error
 }
 
+func (f *File) DeIncRef() error {
+	if f.RefCount >= 1 {
+		f.RefCount--
+	}
+	return f.DB().Model(f).Update("ref_count", f.RefCount).Error
+}
+
 // 已上传成功,  入库
 func (f *File) Create(userId uint, size uint64, md5, path, ext, mimeType string) error {
 	f.Size = size
