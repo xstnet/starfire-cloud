@@ -79,9 +79,9 @@ func SetupRouters() *gin.Engine {
 		// 上传
 		upload := v1.Group("/upload", middleware.TokenAuthHandler())
 		{
-			upload.POST("/batch", middleware.TokenAuthHandler(), controllers.BatchUpload)
-			upload.POST("/file", middleware.TokenAuthHandler(), controllers.UploadFile)
-			upload.POST("/pre-upload", middleware.TokenAuthHandler(), controllers.PreUpload)
+			upload.POST("/batch", controllers.BatchUpload)
+			upload.POST("/file", controllers.UploadFile)
+			upload.POST("/pre-upload", controllers.PreUpload)
 		}
 
 	}

@@ -17,10 +17,11 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/common"
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
+	"github.com/xstnet/starfire-cloud/internal/models/form"
 	"github.com/xstnet/starfire-cloud/pkg/systeminfo"
 )
 
-func UploadFile(c *gin.Context, userId uint) (map[string]interface{}, error) {
+func UploadFile(c *gin.Context, userId uint) (*map[string]interface{}, error) {
 	targetId, err := strconv.Atoi(c.PostForm("target_id"))
 
 	if err != nil || targetId < 0 {
@@ -33,6 +34,35 @@ func UploadFile(c *gin.Context, userId uint) (map[string]interface{}, error) {
 	}
 
 	return saveSingleFile(c, userId, targetId, file)
+}
+
+// 上传前的一些检查操作
+func PreUpload(c *gin.Context, userId uint) (*map[string]interface{}, error) {
+	preUploadForm := form.PreUpload{}
+	if err := c.ShouldBindJSON(&preUploadForm); err != nil {
+		return nil, errors.InvalidParameter()
+	}
+
+	user := &models.User{}
+	if err := user.GetUserById(userId); err != nil {
+		return nil, errors.New("用户不存在")
+	}
+	// 检查余量
+	if err := checkRemainSpace(user, preUploadForm.Size); err != nil {
+		return nil, err
+	}
+
+	// 检查文检是否已存在
+	var exist uint8
+	fileModel := &models.File{}
+	if ok := fileModel.GetFileByMd5(preUploadForm.Md5); ok {
+		exist = 1
+	}
+
+	return &map[string]interface{}{
+		"exist": exist,
+	}, nil
+
 }
 
 // 暂不使用
@@ -90,7 +120,7 @@ func getAndCreateSavePath(userId uint) (relativePath string, err error) {
 	return
 }
 
-func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.FileHeader) (map[string]interface{}, error) {
+func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.FileHeader) (*map[string]interface{}, error) {
 	// 检查文件名是否合法
 	if err := common.CheckFilename(file.Filename); err != nil {
 		return nil, errors.InvalidParameter()
@@ -169,7 +199,7 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 		"ext":   fileModel.Extend,
 		"thumb": "", // todo: 返回每种文件格式对应的缩略图url
 	}
-	return data, nil
+	return &data, nil
 }
 
 // 检查剩余的存储空间是否足够
