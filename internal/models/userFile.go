@@ -30,7 +30,8 @@ const (
 )
 
 var scene = map[string][]interface{}{
-	"check_samename": {"UserId", "ParentId", "IsDir", "Name"}, // 新建文件夹或上传文件时，检查同目录下是否有同名文件或文件夹
+	"check_samename": {"UserId", "ParentId", "IsDir", "Name"},     // 新建文件夹或上传文件时，检查同目录下是否有同名文件或文件夹
+	"dir_list":       {"UserId", "ParentId", "IsDir", "IsDelete"}, // 移动或复制文件时，获取当前级别的目录
 }
 
 func (uf *UserFile) GetScene(key string) []interface{} {
@@ -117,4 +118,15 @@ func (uf *UserFile) BindFile() error {
 	uf.processSameName()
 
 	return uf.DB().Create(uf).Error
+}
+
+func (uf *UserFile) DirList() *[]UserFile {
+	uf.IsDelete = IS_DELETE_NO
+	uf.IsDir = IS_DIR_YES
+
+	// 预定义10个容量
+	var data = make([]UserFile, 0, 10)
+	uf.DB().Model(uf).Where(uf, uf.GetScene("dir_list")...).Order("updated_at desc").Find(&data)
+
+	return &data
 }

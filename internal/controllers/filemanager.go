@@ -65,3 +65,12 @@ func Delete(c *gin.Context) {
 	}
 	response.Success(c, fmt.Sprintf("删除成功, %d条数据已放入回收站", rowsAffected), nil)
 }
+
+func DirList(c *gin.Context) {
+	data, err := services.DirList(c, c.GetUint("userId"))
+	if err != nil {
+		response.Error(c, err.Error())
+		return
+	}
+	response.OkWithData(c, &gin.H{"list": data})
+}
