@@ -66,6 +66,7 @@ func SetupRouters() *gin.Engine {
 			filemanager.POST("/delete", controllers.Delete)
 			filemanager.GET("/list", controllers.List)
 			filemanager.GET("/dir-list", controllers.DirList)
+			// filemanager.GET("/preview", controllers.Preview)
 		}
 
 		// Recycle File operation
