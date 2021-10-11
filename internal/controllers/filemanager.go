@@ -17,8 +17,16 @@ func Mkdir(c *gin.Context) {
 	}
 
 	response.Success(c, "创建成功", &gin.H{
-		"id":   userFile.ID,
-		"name": userFile.Name,
+		"id":         userFile.ID,
+		"name":       userFile.Name,
+		"is_dir":     1,
+		"parent_id":  userFile.ParentId,
+		"created_at": userFile.CreatedAt,
+		"updated_at": userFile.UpdatedAt,
+		"file": map[string]interface{}{
+			"size": 0,
+			"id":   0,
+		},
 	})
 }
 

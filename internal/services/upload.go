@@ -153,6 +153,8 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 		return nil, errors.InvalidParameter()
 	}
 	if len(file.Header["Content-Type"]) < 1 || file.Size < 0 {
+		fmt.Println("def")
+
 		return nil, errors.InvalidParameter()
 	}
 

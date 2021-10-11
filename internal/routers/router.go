@@ -13,7 +13,7 @@ import (
 
 func SetupRouters() *gin.Engine {
 	r := gin.New()
-	r.Use(middleware.RequestCostHandler(), gin.Logger(), gin.Recovery())
+	r.Use(middleware.RequestCostHandler(), gin.Logger(), gin.Recovery(), middleware.CorsHandler())
 
 	// r.Use(middleware.TokenHandler())
 
@@ -29,7 +29,7 @@ func SetupRouters() *gin.Engine {
 	})
 
 	// version 1
-	v1 := r.Group("/v1")
+	v1 := r.Group("/api/v1")
 	{
 		// share := v1.Group("/share")
 		// {
