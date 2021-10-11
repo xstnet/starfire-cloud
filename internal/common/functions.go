@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -74,4 +75,24 @@ func ProcessPageByList(page, pageSize, defaultPageSize int) (limit int, offset i
 func DumpVal(val interface{}) {
 	fmt.Println("[dump-val], type:", reflect.TypeOf(val))
 	fmt.Println("[dump-val], value:", val)
+}
+
+func SliceUniqueUint(val *[]uint) []uint {
+	var tmp = make(map[uint]uint8, len(*val))
+	for _, v := range *val {
+		tmp[v] = 1
+	}
+
+	var res = make([]uint, 0, len(tmp))
+	for k := range tmp {
+		res = append(res, k)
+	}
+
+	return res
+}
+
+func Struct2Map(target interface{}) (data map[string]interface{}) {
+	jsonData, _ := json.Marshal(target)
+	json.Unmarshal(jsonData, &data)
+	return
 }

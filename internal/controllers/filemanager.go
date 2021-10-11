@@ -52,7 +52,7 @@ func List(c *gin.Context) {
 		response.Error(c, err.Error())
 		return
 	}
-	response.OkWithData(c, &gin.H{"name": data})
+	response.OkWithData(c, data)
 }
 
 func Copy(c *gin.Context) {}

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/common"
 	"github.com/xstnet/starfire-cloud/internal/errors"
@@ -132,18 +134,58 @@ func List(c *gin.Context, userId uint) (*gin.H, error) {
 	}
 
 	// 获取File信息写入到返回结果中
-	// var fileIds = make([]uint, 0, len(userFiles))
+	var fileIds = make([]uint, 0, len(userFiles))
+	for _, v := range userFiles {
+		if v.IsDir == models.IS_DIR_NO {
+			fileIds = append(fileIds, v.FileId)
+		}
+	}
 
-	// for _, v := range userFiles {
-	// 	if v.FileId > 0 {
-	// 		fileIds = append(fileIds, v.FileId)
-	// 	}
-	// }
+	fileIds = common.SliceUniqueUint(&fileIds)
+
+	files := make([]models.File, len(fileIds))
+	models.DB().Find(&files, fileIds)
+
+	var mapId2File = make(map[uint]models.File, len(files))
+
+	for _, v := range files {
+		mapId2File[v.ID] = v
+	}
+
+	var listData = make([]map[string]interface{}, 0, len(userFiles))
+	fmt.Println(listData)
+
+	for _, v := range userFiles {
+		item := common.Struct2Map(v)
+
+		if v.IsDir == models.IS_DIR_YES {
+			continue
+		}
+		file, ok := mapId2File[v.FileId]
+		if !ok {
+			item["file"] = map[string]interface{}{
+				"id": 0,
+			}
+		} else {
+			item["file"] = map[string]interface{}{
+				"id":   file.ID,
+				"ext":  file.Extend,
+				"size": file.Size,
+				"md5":  file.Md5,
+				"kind": file.Kind,
+			}
+		}
+		delete(item, "is_delete")
+		delete(item, "user_id")
+		listData = append(listData, item)
+	}
+
+	fmt.Println(files)
 
 	return &gin.H{
-		"list": &userFiles,
+		"list": &listData,
 		"more": more,
-		// "ids":  fileIds,
+		"ids":  fileIds,
 	}, nil
 }
 
