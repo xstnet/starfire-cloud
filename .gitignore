@@ -9,3 +9,5 @@
 
 # 配置文件不加入版本控制
 configs/config.ini
+
+uploads

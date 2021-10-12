@@ -225,11 +225,20 @@ func bindUserFile(user *models.User, file *models.File, targetId uint, showName 
 	}
 
 	data := map[string]interface{}{
-		"id":   userFile.ID,
-		"md5":  file.Md5,
-		"name": userFile.Name,
-		"kind": file.Kind,
-		"ext":  file.Extend,
+		"id":         userFile.ID,
+		"file_id":    file.ID,
+		"parent_id":  userFile.ParentId,
+		"name":       userFile.Name,
+		"is_dir":     userFile.IsDir,
+		"created_at": userFile.CreatedAt,
+		"updated_at": userFile.UpdatedAt,
+		"file": map[string]interface{}{
+			"id":   userFile.ID,
+			"md5":  file.Md5,
+			"kind": file.Kind,
+			"ext":  file.Extend,
+			"size": file.Size,
+		},
 	}
 	return &data, nil
 }
