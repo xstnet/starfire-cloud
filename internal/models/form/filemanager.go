@@ -11,7 +11,7 @@ type FileList struct {
 }
 
 type FileIdList struct {
-	FIdList []uint `json:"fidlist"`
+	FIdList []uint64 `json:"fidlist"`
 }
 
 type FileCommon struct {

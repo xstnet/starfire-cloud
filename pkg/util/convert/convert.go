@@ -1,6 +1,9 @@
 package convert
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 func GetString(val interface{}) (s string, ok bool) {
 
@@ -15,6 +18,10 @@ func GetBool(val interface{}) (b bool, ok bool) {
 	b, ok = val.(bool)
 
 	return
+}
+
+func GetInt1[T comparable](a T) {
+	fmt.Print(1)
 }
 
 // GetInt returns the value associated with the key as an integer.

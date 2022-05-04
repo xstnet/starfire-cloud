@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/controllers"
+	"github.com/xstnet/starfire-cloud/internal/controllers/upload"
 	"github.com/xstnet/starfire-cloud/internal/middleware"
 	"github.com/xstnet/starfire-cloud/pkg/response"
 )
@@ -79,13 +80,13 @@ func SetupRouters() *gin.Engine {
 		}
 
 		// 上传
-		upload := v1.Group("/upload", middleware.TokenAuthHandler())
+		uploadManager := v1.Group("/upload", middleware.TokenAuthHandler())
 		{
-			upload.POST("/batch", controllers.BatchUpload)
-			upload.POST("/file", controllers.UploadFile)
-			upload.POST("/pre-upload", controllers.PreUpload)
+			uploadManager.POST("/batch", upload.BatchUpload)
+			uploadManager.POST("/single-upload", upload.SingleUpload)
+			uploadManager.POST("/pre-upload", upload.PreUpload)
 			// 秒传api
-			upload.POST("/instant", controllers.Instant)
+			uploadManager.POST("/instant", upload.Instant)
 		}
 
 	}

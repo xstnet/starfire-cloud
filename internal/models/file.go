@@ -48,6 +48,7 @@ var Ext2kind = map[string]uint8{
 	"svg":  KIND_IMAGE,
 	"cdr":  KIND_IMAGE,
 	"emf":  KIND_IMAGE,
+	"webp": KIND_IMAGE,
 
 	// Audio
 	"mp3":  KIND_AUDIO,
