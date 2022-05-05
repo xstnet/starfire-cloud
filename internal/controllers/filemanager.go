@@ -2,15 +2,17 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/xstnet/starfire-cloud/internal/services/filemanager"
+	"github.com/xstnet/starfire-cloud/internal/services/list"
+	"github.com/xstnet/starfire-cloud/pkg/util/d"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xstnet/starfire-cloud/internal/services"
 	"github.com/xstnet/starfire-cloud/pkg/response"
 )
 
 // 创建文件夹
 func Mkdir(c *gin.Context) {
-	userFile, err := services.Mkdir(c, c.GetUint("userId"))
+	userFile, err := filemanager.Mkdir(c, c.GetUint("userId"))
 	if err != nil {
 		response.Error(c, err.Error())
 		return
@@ -23,7 +25,7 @@ func Mkdir(c *gin.Context) {
 		"parent_id":  userFile.ParentId,
 		"created_at": userFile.CreatedAt,
 		"updated_at": userFile.UpdatedAt,
-		"file": map[string]interface{}{
+		"file": d.StringMap{
 			"size": 0,
 			"id":   0,
 		},
@@ -32,7 +34,7 @@ func Mkdir(c *gin.Context) {
 
 // 重命名
 func Rename(c *gin.Context) {
-	userFile, err := services.Rename(c, c.GetUint("userId"))
+	userFile, err := filemanager.Rename(c, c.GetUint("userId"))
 	if err != nil {
 		response.Error(c, err.Error())
 		return
@@ -41,12 +43,12 @@ func Rename(c *gin.Context) {
 	response.Success(c, "重命名成功", &gin.H{"name": userFile.Name})
 }
 
-// 移动
+// Move 移动
 // todo ：支持选择多个文件
 func Move(c *gin.Context) {
 	// 开启事物， 循环处理即可， 多文件移动的场景很少
 	// 或先全部移过去， 再查询是否有重名的， 再根据ID去改名
-	userFile, err := services.Move(c, c.GetUint("userId"))
+	userFile, err := filemanager.Move(c, c.GetUint("userId"))
 	if err != nil {
 		response.Error(c, err.Error())
 		return
@@ -55,7 +57,7 @@ func Move(c *gin.Context) {
 }
 
 func List(c *gin.Context) {
-	data, err := services.List(c, c.GetUint("userId"))
+	data, err := list.FileList(c, c.GetUint("userId"))
 	if err != nil {
 		response.Error(c, err.Error())
 		return
@@ -66,7 +68,7 @@ func List(c *gin.Context) {
 func Copy(c *gin.Context) {}
 
 func Delete(c *gin.Context) {
-	rowsAffected, err := services.Delete(c, c.GetUint("userId"))
+	rowsAffected, err := filemanager.Delete(c, c.GetUint("userId"))
 	if err != nil {
 		response.Error(c, err.Error())
 		return
@@ -75,7 +77,7 @@ func Delete(c *gin.Context) {
 }
 
 func DirList(c *gin.Context) {
-	data, err := services.DirList(c, c.GetUint("userId"))
+	data, err := list.DirList(c, c.GetUint("userId"))
 	if err != nil {
 		response.Error(c, err.Error())
 		return

@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/pkg/jwt"
 	"github.com/xstnet/starfire-cloud/pkg/response"
+	"github.com/xstnet/starfire-cloud/pkg/util/jwt"
 	"regexp"
 )
 
@@ -31,12 +32,15 @@ func Login(c *gin.Context) {
 // Register 用户注册
 func Register(c *gin.Context) {
 	// 校验参数
-	var regForm form.RegisterForm
-	c.ShouldBindJSON(&regForm)
-	err := regForm.CheckParams()
+
+	regForm, err := form.GetJsonForm[form.RegisterForm](c)
 	if err != nil {
-		response.Error(c, err.Error())
+		response.Error(c, errors.InvalidParameter().Error())
 		return
+	}
+
+	if err := regForm.CheckParams(); err != nil {
+		response.Error(c, err.Error())
 	}
 
 	// 注册
@@ -55,7 +59,7 @@ func Register(c *gin.Context) {
 	tokenString, _ := jwt.GenerateToken(user.ID)
 	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
 
-	response.Success(c, "注册成功", &data)
+	response.Success(c, "注册成功, 登录中。。。", &data)
 }
 
 // GetProfile 获取用户信息
@@ -72,7 +76,7 @@ func UpdateProfile(c *gin.Context) {}
 
 // ChangePassword 用户修改密码
 func ChangePassword(c *gin.Context) {
-	user := &models.User{}
+	user := new(models.User)
 
 	if err := user.GetUserById(c.GetUint("userId")); err != nil {
 		response.Error(c, "用户不存在")

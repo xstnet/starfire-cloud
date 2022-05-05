@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xstnet/starfire-cloud/pkg/jwt"
 	"github.com/xstnet/starfire-cloud/pkg/response"
+	"github.com/xstnet/starfire-cloud/pkg/util/jwt"
 )
 
-func TokenAuthHandler() gin.HandlerFunc {
+func TokenValidateHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
 		if tokenString == "" {

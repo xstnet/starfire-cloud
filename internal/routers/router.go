@@ -1,8 +1,6 @@
 package routers
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/controllers"
 	"github.com/xstnet/starfire-cloud/internal/controllers/upload"
@@ -14,7 +12,7 @@ import (
 
 func SetupRouters() *gin.Engine {
 	r := gin.New()
-	r.Use(middleware.RequestCostHandler(), gin.Logger(), gin.Recovery(), middleware.CorsHandler())
+	r.Use(middleware.RequestCostHandler(), middleware.CorsHandler(), gin.Logger(), gin.Recovery())
 
 	// r.Use(middleware.TokenHandler())
 
@@ -25,8 +23,8 @@ func SetupRouters() *gin.Engine {
 		})
 	})
 
-	r.GET("/test", middleware.TokenAuthHandler(), func(c *gin.Context) {
-		fmt.Println("tttttttt")
+	r.GET("/login/test", middleware.TokenValidateHandler(), func(c *gin.Context) {
+		c.JSON(0, "has login")
 	})
 
 	// version 1
@@ -49,7 +47,7 @@ func SetupRouters() *gin.Engine {
 		v1.POST("/register", controllers.Register)
 
 		// User
-		user := v1.Group("/user", middleware.TokenAuthHandler())
+		user := v1.Group("/user", middleware.TokenValidateHandler())
 		{
 			user.POST("/change-password", controllers.ChangePassword)
 			user.POST("/change-avatar", controllers.ChangeAvatar)
@@ -58,7 +56,7 @@ func SetupRouters() *gin.Engine {
 		}
 
 		// File operation
-		filemanager := v1.Group("/filemanager", middleware.TokenAuthHandler())
+		filemanager := v1.Group("/filemanager", middleware.TokenValidateHandler())
 		{
 			filemanager.POST("/mkdir", controllers.Mkdir)
 			filemanager.POST("/rename", controllers.Rename)
@@ -67,11 +65,10 @@ func SetupRouters() *gin.Engine {
 			filemanager.POST("/delete", controllers.Delete)
 			filemanager.GET("/list", controllers.List)
 			filemanager.GET("/dir-list", controllers.DirList)
-			// filemanager.GET("/preview", controllers.Preview)
 		}
 
 		// Recycle File operation
-		recycle := v1.Group("/recycle", middleware.TokenAuthHandler())
+		recycle := v1.Group("/recycle", middleware.TokenValidateHandler())
 		{
 			recycle.GET("/list", controllers.RecycleList)
 			recycle.POST("/delete", controllers.RecycleDelete)
@@ -80,7 +77,7 @@ func SetupRouters() *gin.Engine {
 		}
 
 		// 上传
-		uploadManager := v1.Group("/upload", middleware.TokenAuthHandler())
+		uploadManager := v1.Group("/upload", middleware.TokenValidateHandler())
 		{
 			uploadManager.POST("/batch", upload.BatchUpload)
 			uploadManager.POST("/single-upload", upload.SingleUpload)

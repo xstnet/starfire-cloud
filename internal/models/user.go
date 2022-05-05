@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/xstnet/starfire-cloud/pkg/util/d"
 	"log"
 
 	"github.com/xstnet/starfire-cloud/configs"
@@ -59,10 +60,10 @@ func (u *User) UpdateUsedSpace(size uint64) error {
 }
 
 // 用户信息转化
-func (u *User) ToDetail() map[string]interface{} {
+func (u *User) ToDetail() d.StringMap {
 	// 处理总存储空间
 	diskInfo := systeminfo.DiskInfo(configs.Upload.UploadRootPath)
-	return map[string]interface{}{
+	return d.StringMap{
 		"id":            u.ID,
 		"username":      u.Username,
 		"email":         u.Email,

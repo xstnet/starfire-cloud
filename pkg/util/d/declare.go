@@ -1,3 +1,3 @@
-package declare
+package d
 
 type StringMap map[string]interface{}

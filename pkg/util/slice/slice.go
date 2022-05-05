@@ -1,10 +1,12 @@
 package slice
 
-import "golang.org/x/exp/constraints"
+import (
+	"golang.org/x/exp/constraints"
+)
 
-func Unique[T constraints.Integer](val *[]T) *[]T {
-	var tmp = make(map[T]byte, len(*val))
-	for _, v := range *val {
+func Unique[T constraints.Integer](val []T) []T {
+	var tmp = make(map[T]byte, len(val))
+	for _, v := range val {
 		tmp[v] = 1
 	}
 
@@ -13,5 +15,5 @@ func Unique[T constraints.Integer](val *[]T) *[]T {
 		res = append(res, k)
 	}
 
-	return &res
+	return res
 }

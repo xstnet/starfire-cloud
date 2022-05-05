@@ -2,23 +2,24 @@ package list
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/xstnet/starfire-cloud/internal/common"
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/pkg/slice"
+	"github.com/xstnet/starfire-cloud/pkg/util/common"
+	"github.com/xstnet/starfire-cloud/pkg/util/d"
+	"github.com/xstnet/starfire-cloud/pkg/util/slice"
 )
 
-// 获取文件列表
-func List(c *gin.Context, userId uint) (*gin.H, error) {
-	listForm := &form.FileList{}
-	if err := c.ShouldBind(listForm); err != nil {
+// FileList 获取文件列表
+func FileList(c *gin.Context, userId uint) (*d.StringMap, error) {
+	listForm, err := form.GetForm[form.FileList](c)
+	if err != nil {
 		return nil, errors.InvalidParameter()
 	}
 
-	limit, offset := common.ProcessPageByList(listForm.Page, listForm.PageSize, 200)
+	limit, offset := common.ProcessPage(listForm.Page, listForm.PageSize, 200)
 
-	where := map[string]interface{}{
+	where := d.StringMap{
 		"user_id":   userId,
 		"parent_id": listForm.ParentId,
 		"is_delete": models.IS_DELETE_NO,
@@ -35,7 +36,7 @@ func List(c *gin.Context, userId uint) (*gin.H, error) {
 	more := 0
 
 	if result.RowsAffected <= 0 {
-		return &gin.H{"list": &userFiles, "more": more}, nil
+		return &d.StringMap{"list": &userFiles, "more": more}, nil
 	}
 
 	// 如果获取到的元素大于pageSize,说明还有下一页
@@ -52,7 +53,7 @@ func List(c *gin.Context, userId uint) (*gin.H, error) {
 		}
 	}
 
-	fileIds = slice.Unique(&fileIds)
+	fileIds = slice.Unique(fileIds)
 
 	files := make([]models.File, len(fileIds))
 	models.DB().Find(&files, fileIds)
@@ -63,17 +64,17 @@ func List(c *gin.Context, userId uint) (*gin.H, error) {
 		mapId2File[v.ID] = v
 	}
 
-	var listData = make([]map[string]interface{}, 0, len(userFiles))
+	var listData = make([]d.StringMap, 0, len(userFiles))
 
 	for _, v := range userFiles {
 		item := common.Struct2Map(v)
-		item["file"] = map[string]interface{}{
+		item["file"] = d.StringMap{
 			"id": 0,
 		}
 		if v.IsDir == models.IS_DIR_NO {
 			file, ok := mapId2File[v.FileId]
 			if ok {
-				item["file"] = map[string]interface{}{
+				item["file"] = d.StringMap{
 					"id":   file.ID,
 					"ext":  file.Extend,
 					"size": file.Size,
@@ -88,7 +89,7 @@ func List(c *gin.Context, userId uint) (*gin.H, error) {
 		listData = append(listData, item)
 	}
 
-	return &gin.H{
+	return &d.StringMap{
 		"list": &listData,
 		"more": more,
 	}, nil

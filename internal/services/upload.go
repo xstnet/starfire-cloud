@@ -14,7 +14,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/configs"
-	"github.com/xstnet/starfire-cloud/internal/common"
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
@@ -22,7 +21,7 @@ import (
 	"github.com/xstnet/starfire-cloud/pkg/systeminfo"
 )
 
-func UploadFile(c *gin.Context, userId uint) (*map[string]interface{}, error) {
+func UploadFile(c *gin.Context, userId uint) (*d.StringMap, error) {
 	targetId, err := strconv.Atoi(c.PostForm("target_id"))
 
 	if err != nil || targetId < 0 {
@@ -38,7 +37,7 @@ func UploadFile(c *gin.Context, userId uint) (*map[string]interface{}, error) {
 }
 
 // 上传前的一些检查操作
-func PreUpload(c *gin.Context, userId uint) (*map[string]interface{}, error) {
+func PreUpload(c *gin.Context, userId uint) (*d.StringMap, error) {
 	dataForm := form.PreUpload{}
 	if err := c.ShouldBindJSON(&dataForm); err != nil {
 		return nil, errors.New(err.Error())
@@ -60,14 +59,14 @@ func PreUpload(c *gin.Context, userId uint) (*map[string]interface{}, error) {
 		exist = 1
 	}
 
-	return &map[string]interface{}{
+	return &d.StringMap{
 		"exist": exist,
 	}, nil
 
 }
 
 // 秒传
-func Instant(c *gin.Context, userId uint) (*map[string]interface{}, error) {
+func Instant(c *gin.Context, userId uint) (*d.StringMap, error) {
 	dataForm := form.Instant{}
 	if err := c.ShouldBindJSON(&dataForm); err != nil {
 		return nil, errors.InvalidParameter()
@@ -148,9 +147,9 @@ func getAndCreateSavePath(userId uint) (relativePath string, err error) {
 	return
 }
 
-func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.FileHeader) (*map[string]interface{}, error) {
+func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.FileHeader) (*d.StringMap, error) {
 	// 检查文件名是否合法
-	if err := common.CheckFilename(file.Filename); err != nil {
+	if err := fileUtil.CheckName(file.Filename); err != nil {
 		return nil, errors.InvalidParameter()
 	}
 	if len(file.Header["Content-Type"]) < 1 || file.Size < 0 {
@@ -208,7 +207,7 @@ func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.F
 	return bindUserFile(user, fileModel, uint(targetId), file.Filename)
 }
 
-func bindUserFile(user *models.User, file *models.File, targetId uint, showName string) (*map[string]interface{}, error) {
+func bindUserFile(user *models.User, file *models.File, targetId uint, showName string) (*d.StringMap, error) {
 	// 将文件对象绑定到用户的文件
 	userFile := &models.UserFile{
 		UserId:   user.ID,
@@ -225,7 +224,7 @@ func bindUserFile(user *models.User, file *models.File, targetId uint, showName 
 		return nil, err
 	}
 
-	data := map[string]interface{}{
+	data := d.StringMap{
 		"id":   userFile.ID,
 		"md5":  file.Md5,
 		"name": userFile.Name,

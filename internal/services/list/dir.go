@@ -7,9 +7,10 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/models/form"
 )
 
+// DirList 文件夹列表
 func DirList(c *gin.Context, userId uint) (*[]models.UserFile, error) {
-	listForm := &form.FileList{}
-	if err := c.ShouldBind(listForm); err != nil {
+	listForm, err := form.GetForm[form.DirList](c)
+	if err != nil {
 		return nil, errors.InvalidParameter()
 	}
 

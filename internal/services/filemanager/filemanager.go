@@ -1,14 +1,14 @@
-package services
+package filemanager
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/pkg/convert"
-	"github.com/xstnet/starfire-cloud/pkg/declare"
-	"github.com/xstnet/starfire-cloud/pkg/dir"
-	"github.com/xstnet/starfire-cloud/pkg/fileUtil"
+	"github.com/xstnet/starfire-cloud/pkg/util/convert"
+	"github.com/xstnet/starfire-cloud/pkg/util/d"
+	"github.com/xstnet/starfire-cloud/pkg/util/dir"
+	"github.com/xstnet/starfire-cloud/pkg/util/fileUtil"
 )
 
 // 创建文件夹
@@ -34,7 +34,7 @@ func Mkdir(c *gin.Context, userId uint) (*models.UserFile, error) {
 
 // 重命名
 func Rename(c *gin.Context, userId uint) (*models.UserFile, error) {
-	var data = make(declare.StringMap, 4)
+	var data = make(d.StringMap, 4)
 	err := c.ShouldBindJSON(&data)
 
 	if err != nil {
