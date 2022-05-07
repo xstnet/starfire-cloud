@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"path/filepath"
 	"strings"
 	"time"
@@ -11,29 +10,19 @@ import (
 
 type UserFile struct {
 	BaseModel
-	UserId   uint   `json:"user_id"`
-	ParentId uint   `json:"parent_id"`
-	FileId   uint   `json:"file_id"`
-	IsDir    uint8  `json:"is_dir"`
-	IsDelete uint8  `json:"is_delete"`
+	UserId   uint   `json:"userId"`
+	ParentId uint   `json:"parentId"`
+	FileId   uint   `json:"fileId"`
+	IsDir    uint8  `json:"isDir"`
+	IsDelete uint8  `json:"isDelete"`
 	Name     string `json:"name"`
 }
 
 // 是否文件夹
 const (
-	IS_DIR_YES = 1
-	IS_DIR_NO  = 0
+	IsDirYes = 1
+	IsDirNo  = 0
 )
-
-const (
-	IS_DELETE_YES = 1
-	IS_DELETE_NO  = 0
-)
-
-var scene = d.Map[string, []any]{
-	"checkSameName": {"UserId", "ParentId", "IsDir", "Name"},     // 新建文件夹或上传文件时，检查同目录下是否有同名文件或文件夹
-	"dir_list":      {"UserId", "ParentId", "IsDir", "IsDelete"}, // 移动或复制文件时，获取当前级别的目录
-}
 
 //func (uf *UserFile) GetScene(key string) []string {
 //	return scene[key]
@@ -50,7 +39,8 @@ func (uf *UserFile) Mkdir() error {
 	return result.Error
 }
 
-func (uf *UserFile) Rename() error {
+func (uf *UserFile) Rename(newName string) error {
+	uf.Name = newName
 	uf.processSameName()
 	result := uf.DB().Model(uf).Update("Name", uf.Name)
 	return result.Error
@@ -72,7 +62,7 @@ func (uf *UserFile) checkParentId() error {
 	// 不是在根目录创建，需要验证归属文件夹是否属于当前用户
 	if uf.ParentId > 0 {
 		var count int64
-		uf.DB().Model(uf).Where("id = ? AND user_id = ? AND is_dir = ?", uf.ParentId, uf.UserId, IS_DIR_YES).Count(&count)
+		uf.DB().Model(uf).Where("id = ? AND user_id = ? AND is_dir = ?", uf.ParentId, uf.UserId, IsDirYes).Count(&count)
 		if count == 0 {
 			return errors.New("归属文件夹不存在")
 		}
@@ -93,7 +83,7 @@ func (uf *UserFile) processSameName() {
 
 	// 如果是文件， 需要处理一下扩展名
 	var ext string
-	if uf.IsDir == IS_DIR_NO {
+	if uf.IsDir == IsDirNo {
 		ext = filepath.Ext(uf.Name)
 		uf.Name = strings.TrimSuffix(uf.Name, ext)
 	}
@@ -115,12 +105,12 @@ func (uf *UserFile) BindFile() error {
 }
 
 func (uf *UserFile) DirList() *[]UserFile {
-	uf.IsDelete = IS_DELETE_NO
-	uf.IsDir = IS_DIR_YES
+	uf.IsDelete = IsDeleteNo
+	uf.IsDir = IsDirYes
 
 	// 预定义10个容量
 	var data = make([]UserFile, 0, 10)
-	uf.DB().Model(uf).Where(uf, uf.GetScene("dir_list")...).Order("updated_at desc").Find(&data)
+	uf.DB().Model(uf).Where(uf, uf.GetScene("dirList")...).Order("updated_at desc").Find(&data)
 
 	return &data
 }

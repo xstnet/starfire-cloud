@@ -18,7 +18,7 @@ func Mkdir(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, "创建成功", &gin.H{
+	response.Success(c, "创建成功", &d.StringMap{
 		"id":         userFile.ID,
 		"name":       userFile.Name,
 		"is_dir":     1,
@@ -40,7 +40,7 @@ func Rename(c *gin.Context) {
 		return
 	}
 	// 需要返回名称，可能会有同名文件导致重命名，因此前端需要使用后端最新的数据
-	response.Success(c, "重命名成功", &gin.H{"name": userFile.Name})
+	response.Success(c, "重命名成功", &d.StringMap{"name": userFile.Name})
 }
 
 // Move 移动
@@ -53,7 +53,7 @@ func Move(c *gin.Context) {
 		response.Error(c, err.Error())
 		return
 	}
-	response.Success(c, "移动成功", &gin.H{"name": userFile.Name})
+	response.Success(c, "移动成功", &d.StringMap{"name": userFile.Name})
 }
 
 func List(c *gin.Context) {
@@ -82,5 +82,5 @@ func DirList(c *gin.Context) {
 		response.Error(c, err.Error())
 		return
 	}
-	response.OkWithData(c, &gin.H{"list": data})
+	response.OkWithData(c, &d.StringMap{"list": data})
 }

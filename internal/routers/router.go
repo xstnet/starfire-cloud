@@ -5,6 +5,7 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/controllers"
 	"github.com/xstnet/starfire-cloud/internal/controllers/upload"
 	"github.com/xstnet/starfire-cloud/internal/middleware"
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"github.com/xstnet/starfire-cloud/pkg/response"
 )
 
@@ -18,7 +19,7 @@ func SetupRouters() *gin.Engine {
 
 	// ping
 	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
+		c.JSON(200, d.StringMap{
 			"message": "pong!",
 		})
 	})

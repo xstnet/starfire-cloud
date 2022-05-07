@@ -24,8 +24,8 @@ func Mkdir(c *gin.Context, userId uint) (*models.UserFile, error) {
 
 	userFile := &models.UserFile{
 		UserId:   userId,
-		ParentId: params.PatientId,
-		IsDir:    models.IS_DIR_YES,
+		ParentId: params.ParentId,
+		IsDir:    models.IsDirYes,
 		Name:     params.Name,
 	}
 
@@ -36,44 +36,38 @@ func Mkdir(c *gin.Context, userId uint) (*models.UserFile, error) {
 	return userFile, nil
 }
 
-// 重命名
+// Rename 重命名
 func Rename(c *gin.Context, userId uint) (*models.UserFile, error) {
-	var data = make(d.StringMap, 4)
-	err := c.ShouldBindJSON(&data)
-
+	params, err := form.GetJsonForm[form.Rename](c)
 	if err != nil {
 		return nil, errors.InvalidParameter()
 	}
 
-	id, ok := convert.GetFloat64(data["id"])
-	if !ok || id <= 0 {
-		return nil, errors.InvalidParameter()
-	}
-	newname, ok := convert.GetString(data["newname"])
-	if !ok {
-		return nil, errors.InvalidParameter()
-	}
-
-	if err := fileHelper.CheckName(newname); err != nil {
-		return nil, err
-	}
-
-	userFile := &models.UserFile{}
-	if result := userFile.DB().First(userFile, uint(id)); result.Error != nil || userFile.UserId != userId {
+	userFileModel := new(models.UserFile)
+	if result := userFileModel.DB().First(userFileModel, params.FileId); result.Error != nil || userFileModel.UserId != userId {
 		return nil, errors.New("操作对象不存在")
 	}
 
-	userFile.Name = newname
-	if err := userFile.Rename(); err != nil {
+	if userFileModel.IsDir == models.IsDirNo {
+		if err := fileHelper.CheckName(params.NewName); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := dirHelper.CheckName(params.NewName); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := userFileModel.Rename(params.NewName); err != nil {
 		return nil, err
 	}
 
-	return userFile, nil
+	return userFileModel, nil
 }
 
-// 移动
+// Move 移动
 func Move(c *gin.Context, userId uint) (*models.UserFile, error) {
-	var data = make(gin.H, 4)
+	var data = make(d.StringMap, 4)
 	err := c.ShouldBindJSON(&data)
 
 	if err != nil {
@@ -102,17 +96,17 @@ func Move(c *gin.Context, userId uint) (*models.UserFile, error) {
 	return userFile, nil
 }
 
-// 删除
+// Delete 删除
 // 只标记当前节点，不处理子元素，从回收站删除时再处理子元素
 func Delete(c *gin.Context, userId uint) (int64, error) {
-	var data = &form.FileIdList{}
-	if err := c.ShouldBind(data); err != nil {
+	params, err := form.GetJsonForm[form.FileIdsItem](c)
+	if err != nil {
 		return 0, errors.InvalidParameter()
 	}
 
-	result := models.DB().Model(&models.UserFile{}).
-		Where(data.FIdList).
-		Where("user_id = ? and is_delete=?", userId, models.IS_DELETE_NO).
+	result := models.DB().Model(new(models.UserFile)).
+		Where(params.FileIds).
+		Where("user_id = ? and is_delete=?", userId, models.IsDeleteNo).
 		Update("is_delete", 1)
 
 	if result.Error != nil {

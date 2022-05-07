@@ -8,14 +8,14 @@ import (
 )
 
 func RecycleRestore(c *gin.Context, userId uint) (int64, error) {
-	var data = &form.FileIdList{}
+	var data = &form.FileIdsItem{}
 	if err := c.ShouldBind(data); err != nil {
 		return 0, errors.InvalidParameter()
 	}
 
 	result := models.DB().Model(&models.UserFile{}).
-		Where(data.FIdList).
-		Where("user_id = ? and is_delete=?", userId, models.IS_DELETE_YES).
+		Where(data.FileIds).
+		Where("user_id = ? and is_delete=?", userId, models.IsDeleteYes).
 		Update("is_delete", 0)
 
 	// c.ShouldBindBodyWith()

@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/xstnet/starfire-cloud/pkg/helper/fileHelper"
 	"io"
 	"mime/multipart"
 	"os"
@@ -17,7 +18,7 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/pkg/fileUtil"
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"github.com/xstnet/starfire-cloud/pkg/systeminfo"
 )
 
@@ -149,7 +150,7 @@ func getAndCreateSavePath(userId uint) (relativePath string, err error) {
 
 func saveSingleFile(c *gin.Context, userId uint, targetId int, file *multipart.FileHeader) (*d.StringMap, error) {
 	// 检查文件名是否合法
-	if err := fileUtil.CheckName(file.Filename); err != nil {
+	if err := fileHelper.CheckName(file.Filename); err != nil {
 		return nil, errors.InvalidParameter()
 	}
 	if len(file.Header["Content-Type"]) < 1 || file.Size < 0 {
@@ -214,7 +215,7 @@ func bindUserFile(user *models.User, file *models.File, targetId uint, showName 
 		FileId:   file.ID,
 		Name:     showName,
 		ParentId: uint(targetId),
-		IsDir:    models.IS_DIR_NO,
+		IsDir:    models.IsDirNo,
 	}
 	if err := userFile.BindFile(); err != nil {
 		return nil, err
@@ -238,7 +239,7 @@ func bindUserFile(user *models.User, file *models.File, targetId uint, showName 
 func checkRemainSpace(user *models.User, size uint64) error {
 	// 判断用户的剩余空间是否足够
 	if user.TotalSpace > 0 && user.TotalSpace-user.UsedSpace < size {
-		return errors.New("可用上传空间不足，当前剩余: " + fileUtil.FormatSize(user.TotalSpace-user.UsedSpace))
+		return errors.New("可用上传空间不足，当前剩余: " + fileHelper.FormatSize(user.TotalSpace-user.UsedSpace))
 	}
 	// 判断磁盘余量
 	diskInfo := systeminfo.DiskInfo(configs.Upload.UploadRootPath)
@@ -246,7 +247,7 @@ func checkRemainSpace(user *models.User, size uint64) error {
 		return errors.New("获取磁盘信息失败")
 	}
 	if diskInfo.Free < size {
-		return errors.New("磁盘剩余空间不足，当前余量: " + fileUtil.FormatSize(diskInfo.Free))
+		return errors.New("磁盘剩余空间不足，当前余量: " + fileHelper.FormatSize(diskInfo.Free))
 	}
 	return nil
 }

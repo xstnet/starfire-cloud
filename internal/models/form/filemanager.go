@@ -1,24 +1,13 @@
 package form
 
-// 基础字段
-
-type PatientIdItem struct {
-	PatientId uint `binding:"required,min=0"`
-}
-
-type NameItem struct {
-	Name string `binding:"required,min=1"`
-}
-
-type FileIdList struct {
-	FIdList []uint64 `json:"fidlist"`
-}
-
-type FileCommon struct {
-	FileIdList
-}
-
+// Mkdir 创建文件夹
 type Mkdir struct {
 	NameItem
-	PatientIdItem
+	ParentIdItem
+}
+
+// Rename 重命名
+type Rename struct {
+	NewName string `binding:"required,min=1"`
+	FileIdItem
 }

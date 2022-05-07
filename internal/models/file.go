@@ -10,9 +10,9 @@ type File struct {
 	Path     string `json:"path"`
 	Size     uint64 `json:"size"`
 	Extend   string `json:"extend"`
-	MimeType string `json:"mime_type"`
-	OwnId    uint   `json:"own_id"`
-	RefCount uint   `json:"ref_count"`
+	MimeType string `json:"mimeType"`
+	OwnId    uint   `json:"ownId"`
+	RefCount uint   `json:"refCount"`
 	Kind     uint8  `json:"kind"`
 }
 

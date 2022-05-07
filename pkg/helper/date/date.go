@@ -1,7 +1,10 @@
 package date
 
-import "time"
+import (
+	"golang.org/x/exp/constraints"
+	"time"
+)
 
-func Format(timestamp int64) string {
+func Format[T constraints.Integer](timestamp T) string {
 	return time.Unix(int64(timestamp), 0).Format("2006-01-02 15:04:05")
 }

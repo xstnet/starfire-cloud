@@ -4,7 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
+	"github.com/xstnet/starfire-cloud/internal/models/dto"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"github.com/xstnet/starfire-cloud/pkg/helper/jwt"
 	"github.com/xstnet/starfire-cloud/pkg/response"
 	"regexp"
@@ -12,8 +14,11 @@ import (
 
 // Login 登录
 func Login(c *gin.Context) {
-	var loginForm form.LoginForm
-	c.ShouldBindJSON(&loginForm)
+
+	loginForm, err := form.GetJsonForm[form.LoginForm](c)
+	if err != nil {
+		response.Error(c, err.Error())
+	}
 
 	user, err := loginForm.Login()
 	// 登录失败
@@ -24,7 +29,7 @@ func Login(c *gin.Context) {
 
 	// 登录成功后下发Token和用户信息
 	tokenString, _ := jwt.GenerateToken(user.ID)
-	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
+	data := d.StringMap{"token": tokenString, "profile": dto.LoadUserDetail(user)}
 
 	response.Success(c, "登录成功", &data)
 }
@@ -57,7 +62,7 @@ func Register(c *gin.Context) {
 
 	// 注册成功直接下发token和用户信息，不需要进行登录
 	tokenString, _ := jwt.GenerateToken(user.ID)
-	data := gin.H{"token": tokenString, "profile": user.ToDetail()}
+	data := d.StringMap{"token": tokenString, "profile": dto.LoadUserDetail(user)}
 
 	response.Success(c, "注册成功, 登录中。。。", &data)
 }
@@ -69,7 +74,7 @@ func GetProfile(c *gin.Context) {
 		response.Error(c, "用户不存在")
 		return
 	}
-	response.OkWithData(c, gin.H{"profile": user.ToDetail()})
+	response.OkWithData(c, d.StringMap{"profile": dto.LoadUserDetail(user)})
 }
 
 func UpdateProfile(c *gin.Context) {}
@@ -82,7 +87,7 @@ func ChangePassword(c *gin.Context) {
 		response.Error(c, "用户不存在")
 		return
 	}
-	json := make(gin.H, 3)
+	json := make(d.StringMap, 3)
 	err := c.BindJSON(&json)
 	if err != nil {
 		response.Error(c, "参数错误")

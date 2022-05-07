@@ -11,14 +11,14 @@ type LoginForm struct {
 }
 
 // Login 校验登录参数
-func (l *LoginForm) Login() (*models.User, error) {
+func (form *LoginForm) Login() (*models.User, error) {
 	var user = new(models.User)
 
-	if res := user.DB().Where("username = ?", l.Username).First(user); res.Error != nil {
+	if res := user.DB().Where("username = ?", form.Username).First(user); res.Error != nil {
 		return nil, errors.New("账号或密码错误")
 	}
 
-	if !user.ComparePasswords(l.Password) {
+	if !user.ComparePasswords(form.Password) {
 		return nil, errors.New("账号或密码错误")
 	}
 
