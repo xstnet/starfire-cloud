@@ -65,7 +65,7 @@ func GenerateToken(userId uint) (string, error) {
 
 // 解析校验JWT Token
 func ParseToken(token string) (*MyJwtClaims, error) {
-	tokenClaim, err := jwt.ParseWithClaims(token, &MyJwtClaims{}, func(token *jwt.Token) (interface{}, error) {
+	tokenClaim, err := jwt.ParseWithClaims(token, &MyJwtClaims{}, func(token *jwt.Token) (any, error) {
 		return []byte(configs.Jwt.Secret), nil
 	})
 	if err != nil {

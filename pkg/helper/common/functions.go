@@ -3,7 +3,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/xstnet/starfire-cloud/pkg/util/d"
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"math"
 	"reflect"
 )
@@ -24,12 +24,12 @@ func ProcessPage(page, pageSize, defaultPageSize int) (limit int, offset int) {
 	return
 }
 
-func DumpVal(val interface{}) {
+func DumpVal(val any) {
 	fmt.Println("[dump-val], type:", reflect.TypeOf(val))
 	fmt.Println("[dump-val], value:", val)
 }
 
-func Struct2Map(target interface{}) (data d.StringMap) {
+func Struct2Map(target any) (data d.StringMap) {
 	jsonData, _ := json.Marshal(target)
 	json.Unmarshal(jsonData, &data)
 	return

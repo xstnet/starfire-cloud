@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func GetString(val interface{}) (s string, ok bool) {
+func GetString(val any) (s string, ok bool) {
 
 	s, ok = val.(string)
 
@@ -13,7 +13,7 @@ func GetString(val interface{}) (s string, ok bool) {
 }
 
 // GetBool returns the value associated with the key as a boolean.
-func GetBool(val interface{}) (b bool, ok bool) {
+func GetBool(val any) (b bool, ok bool) {
 
 	b, ok = val.(bool)
 
@@ -25,7 +25,7 @@ func GetInt1[T comparable](a T) {
 }
 
 // GetInt returns the value associated with the key as an integer.
-func GetInt(val interface{}) (i int, ok bool) {
+func GetInt(val any) (i int, ok bool) {
 
 	i, ok = val.(int)
 
@@ -33,7 +33,7 @@ func GetInt(val interface{}) (i int, ok bool) {
 }
 
 // GetInt64 returns the value associated with the key as an integer.
-func GetInt64(val interface{}) (i64 int64, ok bool) {
+func GetInt64(val any) (i64 int64, ok bool) {
 
 	i64, ok = val.(int64)
 
@@ -41,7 +41,7 @@ func GetInt64(val interface{}) (i64 int64, ok bool) {
 }
 
 // GetUint returns the value associated with the key as an unsigned integer.
-func GetUint(val interface{}) (ui uint, ok bool) {
+func GetUint(val any) (ui uint, ok bool) {
 
 	ui, ok = val.(uint)
 
@@ -49,7 +49,7 @@ func GetUint(val interface{}) (ui uint, ok bool) {
 }
 
 // GetUint64 returns the value associated with the key as an unsigned integer.
-func GetUint64(val interface{}) (ui64 uint64, ok bool) {
+func GetUint64(val any) (ui64 uint64, ok bool) {
 
 	ui64, ok = val.(uint64)
 
@@ -57,7 +57,7 @@ func GetUint64(val interface{}) (ui64 uint64, ok bool) {
 }
 
 // GetFloat64 returns the value associated with the key as a float64.
-func GetFloat64(val interface{}) (f64 float64, ok bool) {
+func GetFloat64(val any) (f64 float64, ok bool) {
 
 	f64, ok = val.(float64)
 
@@ -65,7 +65,7 @@ func GetFloat64(val interface{}) (f64 float64, ok bool) {
 }
 
 // GetTime returns the value associated with the key as time.
-func GetTime(val interface{}) (t time.Time, ok bool) {
+func GetTime(val any) (t time.Time, ok bool) {
 
 	t, ok = val.(time.Time)
 
@@ -73,7 +73,7 @@ func GetTime(val interface{}) (t time.Time, ok bool) {
 }
 
 // GetDuration returns the value associated with the key as a duration.
-func GetDuration(val interface{}) (d time.Duration, ok bool) {
+func GetDuration(val any) (d time.Duration, ok bool) {
 
 	d, ok = val.(time.Duration)
 

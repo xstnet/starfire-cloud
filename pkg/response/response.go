@@ -15,21 +15,21 @@ const (
 )
 
 type Response struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-	Cost    string      `json:"cost"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    any    `json:"data"`
+	Cost    string `json:"cost"`
 }
 
 func Ok(c *gin.Context) {
 	JSON(c, CODE_SUCCESS, "ok", nil)
 }
 
-func OkWithData(c *gin.Context, data interface{}) {
+func OkWithData(c *gin.Context, data any) {
 	JSON(c, CODE_SUCCESS, "ok", data)
 }
 
-func Success(c *gin.Context, message string, data interface{}) {
+func Success(c *gin.Context, message string, data any) {
 	JSON(c, CODE_SUCCESS, message, data)
 }
 
@@ -37,11 +37,11 @@ func Error(c *gin.Context, message string) {
 	JSON(c, CODE_FAILURE, message, nil)
 }
 
-func ErrorWithData(c *gin.Context, message string, data interface{}) {
+func ErrorWithData(c *gin.Context, message string, data any) {
 	JSON(c, CODE_FAILURE, message, data)
 }
 
-func JSON(c *gin.Context, code int, message string, data interface{}) {
+func JSON(c *gin.Context, code int, message string, data any) {
 	c.JSON(http.StatusOK, &Response{
 		Code:    code,
 		Message: message,

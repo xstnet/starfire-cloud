@@ -6,28 +6,21 @@ import (
 )
 
 type LoginForm struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
-// 校验登录参数
+// Login 校验登录参数
 func (l *LoginForm) Login() (*models.User, error) {
-	if l.Username == "" {
-		return nil, errors.New("请输入用户名")
-	}
-	if l.Password == "" {
-		return nil, errors.New("请输入密码")
-	}
+	var user = new(models.User)
 
-	var user models.User
-
-	if res := user.DB().Where("username = ?", l.Username).First(&user); res.Error != nil {
-		return nil, errors.New("用户不存在")
+	if res := user.DB().Where("username = ?", l.Username).First(user); res.Error != nil {
+		return nil, errors.New("账号或密码错误")
 	}
 
 	if !user.ComparePasswords(l.Password) {
-		return nil, errors.New("密码错误")
+		return nil, errors.New("账号或密码错误")
 	}
 
-	return &user, nil
+	return user, nil
 }

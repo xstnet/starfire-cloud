@@ -5,25 +5,29 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/pkg/util/convert"
-	"github.com/xstnet/starfire-cloud/pkg/util/d"
-	"github.com/xstnet/starfire-cloud/pkg/util/dir"
-	"github.com/xstnet/starfire-cloud/pkg/util/fileUtil"
+	"github.com/xstnet/starfire-cloud/pkg/helper/convert"
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
+	"github.com/xstnet/starfire-cloud/pkg/helper/dirHelper"
+	"github.com/xstnet/starfire-cloud/pkg/helper/fileHelper"
 )
 
-// 创建文件夹
+// Mkdir 创建文件夹
 func Mkdir(c *gin.Context, userId uint) (*models.UserFile, error) {
-	userFile := &models.UserFile{}
-	err := c.ShouldBindJSON(&userFile)
+	params, err := form.GetJsonForm[form.Mkdir](c)
 	if err != nil {
-		return nil, errors.InvalidParameter()
-	}
-
-	if err := dir.CheckName(userFile.Name); err != nil {
 		return nil, err
 	}
 
-	userFile.UserId = userId
+	if err := dirHelper.CheckName(params.Name); err != nil {
+		return nil, err
+	}
+
+	userFile := &models.UserFile{
+		UserId:   userId,
+		ParentId: params.PatientId,
+		IsDir:    models.IS_DIR_YES,
+		Name:     params.Name,
+	}
 
 	if err := userFile.Mkdir(); err != nil {
 		return nil, errors.New("创建文件夹失败，原因: " + err.Error())
@@ -50,7 +54,7 @@ func Rename(c *gin.Context, userId uint) (*models.UserFile, error) {
 		return nil, errors.InvalidParameter()
 	}
 
-	if err := fileUtil.CheckName(newname); err != nil {
+	if err := fileHelper.CheckName(newname); err != nil {
 		return nil, err
 	}
 

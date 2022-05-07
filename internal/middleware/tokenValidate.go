@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/xstnet/starfire-cloud/pkg/helper/jwt"
 	"github.com/xstnet/starfire-cloud/pkg/response"
-	"github.com/xstnet/starfire-cloud/pkg/util/jwt"
 )
 
 func TokenValidateHandler() gin.HandlerFunc {

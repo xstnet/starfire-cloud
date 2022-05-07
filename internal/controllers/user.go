@@ -5,8 +5,8 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
+	"github.com/xstnet/starfire-cloud/pkg/helper/jwt"
 	"github.com/xstnet/starfire-cloud/pkg/response"
-	"github.com/xstnet/starfire-cloud/pkg/util/jwt"
 	"regexp"
 )
 

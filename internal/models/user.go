@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/xstnet/starfire-cloud/pkg/util/d"
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"log"
 
 	"github.com/xstnet/starfire-cloud/configs"
@@ -24,6 +24,7 @@ type User struct {
 func (u *User) Register() error {
 	u.Password, _ = u.HashAndSalt(u.Password)
 	result := u.DB().Create(u)
+	u.GetScene()
 	return result.Error
 }
 

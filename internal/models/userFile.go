@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"path/filepath"
 	"strings"
 	"time"
@@ -29,27 +30,20 @@ const (
 	IS_DELETE_NO  = 0
 )
 
-var scene = map[string][]interface{}{
-	"check_samename": {"UserId", "ParentId", "IsDir", "Name"},     // 新建文件夹或上传文件时，检查同目录下是否有同名文件或文件夹
-	"dir_list":       {"UserId", "ParentId", "IsDir", "IsDelete"}, // 移动或复制文件时，获取当前级别的目录
+var scene = d.Map[string, []any]{
+	"checkSameName": {"UserId", "ParentId", "IsDir", "Name"},     // 新建文件夹或上传文件时，检查同目录下是否有同名文件或文件夹
+	"dir_list":      {"UserId", "ParentId", "IsDir", "IsDelete"}, // 移动或复制文件时，获取当前级别的目录
 }
 
-func (uf *UserFile) GetScene(key string) []interface{} {
-	return scene[key]
-}
+//func (uf *UserFile) GetScene(key string) []string {
+//	return scene[key]
+//}
 
-// 创建文件夹
+// Mkdir 创建文件夹
 func (uf *UserFile) Mkdir() error {
 	if err := uf.checkParentId(); err != nil {
 		return err
 	}
-	// 防止 shoudBindJson从外部传参，初始化
-	{
-		uf.IsDir = IS_DIR_YES
-		uf.IsDelete = IS_DELETE_NO
-		uf.CreatedAt, uf.UpdatedAt, uf.ID = 0, 0, 0
-	}
-
 	uf.processSameName()
 
 	result := uf.DB().Create(uf)
@@ -62,7 +56,7 @@ func (uf *UserFile) Rename() error {
 	return result.Error
 }
 
-// 移动
+// Move 移动
 func (uf *UserFile) Move() error {
 	if err := uf.checkParentId(); err != nil {
 		return err

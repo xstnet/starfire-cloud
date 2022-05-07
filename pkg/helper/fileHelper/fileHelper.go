@@ -1,4 +1,4 @@
-package fileUtil
+package fileHelper
 
 import (
 	"fmt"

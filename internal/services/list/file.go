@@ -5,9 +5,9 @@ import (
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
-	"github.com/xstnet/starfire-cloud/pkg/util/common"
-	"github.com/xstnet/starfire-cloud/pkg/util/d"
-	"github.com/xstnet/starfire-cloud/pkg/util/slice"
+	"github.com/xstnet/starfire-cloud/pkg/helper/common"
+	"github.com/xstnet/starfire-cloud/pkg/helper/d"
+	"github.com/xstnet/starfire-cloud/pkg/helper/slice"
 )
 
 // FileList 获取文件列表
