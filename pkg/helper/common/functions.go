@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-// 处理列表分页
+// ProcessPage 处理列表分页
 func ProcessPage(page, pageSize, defaultPageSize int) (limit int, offset int) {
 	page = int(math.Max(float64(page), 1))
 	pageSize = int(math.Max(float64(pageSize), float64(defaultPageSize)))
