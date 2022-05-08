@@ -29,7 +29,7 @@ type MysqlConfig struct {
 
 type JwtConfig struct {
 	Secret          string `ini:"secret"`
-	RemeberDuration uint64 `ini:"remeber_duration"`
+	RemeberDuration uint64 `ini:"remember_duration"`
 }
 
 // 逐个加载，方便使用
