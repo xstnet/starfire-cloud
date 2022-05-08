@@ -30,7 +30,7 @@ const (
 
 // Mkdir 创建文件夹
 func (uf *UserFile) Mkdir() error {
-	if err := uf.checkParentId(); err != nil {
+	if err := uf.CheckParentId(); err != nil {
 		return err
 	}
 	uf.processSameName()
@@ -48,7 +48,7 @@ func (uf *UserFile) Rename(newName string) error {
 
 // Move 移动
 func (uf *UserFile) Move() error {
-	if err := uf.checkParentId(); err != nil {
+	if err := uf.CheckParentId(); err != nil {
 		return err
 	}
 
@@ -58,7 +58,7 @@ func (uf *UserFile) Move() error {
 }
 
 // 创建文件夹前先校验归属
-func (uf *UserFile) checkParentId() error {
+func (uf *UserFile) CheckParentId() error {
 	// 不是在根目录创建，需要验证归属文件夹是否属于当前用户
 	if uf.ParentId > 0 {
 		var count int64
@@ -76,7 +76,7 @@ func (uf *UserFile) checkParentId() error {
 // 不考虑在回收站的文件，一样当做同名处理
 func (uf *UserFile) processSameName() {
 	var count int64
-	uf.DB().Model(uf).Where(uf, uf.GetScene("check_samename")...).Count(&count)
+	uf.DB().Model(uf).Where(uf, uf.GetScene("checkSameName")...).Count(&count)
 	if count <= 0 {
 		return
 	}
@@ -95,10 +95,6 @@ func (uf *UserFile) processSameName() {
 }
 
 func (uf *UserFile) BindFile() error {
-	if err := uf.checkParentId(); err != nil {
-		return err
-	}
-
 	uf.processSameName()
 
 	return uf.DB().Create(uf).Error

@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"github.com/gin-gonic/gin"
@@ -16,6 +16,8 @@ import (
 func Login(c *gin.Context) {
 
 	loginForm, err := form.GetJsonForm[form.LoginForm](c)
+	response.Success(c, "登录成功", &loginForm)
+	return
 	if err != nil {
 		response.Error(c, err.Error())
 	}

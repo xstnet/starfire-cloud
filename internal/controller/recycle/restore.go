@@ -1,13 +1,24 @@
-package services
+package recycle
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xstnet/starfire-cloud/internal/errors"
 	"github.com/xstnet/starfire-cloud/internal/models"
 	"github.com/xstnet/starfire-cloud/internal/models/form"
+	"github.com/xstnet/starfire-cloud/pkg/response"
 )
 
-func RecycleRestore(c *gin.Context, userId uint) (int64, error) {
+func Restore(c *gin.Context) {
+	rowsAffected, err := doRestore(c, c.GetUint("userId"))
+	if err != nil {
+		response.Error(c, err.Error())
+		return
+	}
+	response.Success(c, fmt.Sprintf("还原成功, %d条数据已恢复", rowsAffected), nil)
+}
+
+func doRestore(c *gin.Context, userId uint) (int64, error) {
 	var data = &form.FileIdsItem{}
 	if err := c.ShouldBind(data); err != nil {
 		return 0, errors.InvalidParameter()

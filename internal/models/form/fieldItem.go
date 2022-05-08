@@ -3,15 +3,15 @@ package form
 // 基础字段
 
 type ParentIdItem struct {
-	ParentId uint `form:"parentId" binding:"min=0"`
+	ParentId uint `form:"parentId" json:"parentId" binding:"min=0"`
 }
 
 type FileIdItem struct {
-	FileId uint `form:"fileId" binding:"required,min=1"`
+	FileId uint `form:"fileId" json:"fileId" binding:"required,min=1"`
 }
 
 type NameItem struct {
-	Name string `form:"name" binding:"required,min=1"`
+	Name string `form:"name" json:"name" binding:"required,min=1"`
 }
 
 type Paging struct {

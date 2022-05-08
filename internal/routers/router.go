@@ -2,8 +2,10 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/xstnet/starfire-cloud/internal/controllers"
-	"github.com/xstnet/starfire-cloud/internal/controllers/upload"
+	"github.com/xstnet/starfire-cloud/internal/controller"
+	"github.com/xstnet/starfire-cloud/internal/controller/filemanager"
+	"github.com/xstnet/starfire-cloud/internal/controller/recycle"
+	"github.com/xstnet/starfire-cloud/internal/controller/upload"
 	"github.com/xstnet/starfire-cloud/internal/middleware"
 	"github.com/xstnet/starfire-cloud/pkg/helper/d"
 	"github.com/xstnet/starfire-cloud/pkg/response"
@@ -44,53 +46,66 @@ func SetupRouters() *gin.Engine {
 		// /s/:name // 分享
 
 		// login & register
-		v1.POST("/login", controllers.Login)
-		v1.POST("/register", controllers.Register)
+		v1.POST("/login", controller.Login)
+		v1.POST("/register", controller.Register)
 
-		// User
-		user := v1.Group("/user", middleware.TokenValidateHandler())
+		// 用户相关
+		userGroup := v1.Group("/user", middleware.TokenValidateHandler())
 		{
-			user.POST("/change-password", controllers.ChangePassword)
-			user.POST("/change-avatar", controllers.ChangeAvatar)
-			user.POST("/profile", controllers.UpdateProfile)
-			user.GET("/profile", controllers.GetProfile)
+			userGroup.POST("/change-password", controller.ChangePassword)
+			userGroup.POST("/change-avatar", controller.ChangeAvatar)
+			userGroup.POST("/profile", controller.UpdateProfile)
+			userGroup.GET("/profile", controller.GetProfile)
 		}
 
-		// File operation
-		filemanager := v1.Group("/filemanager", middleware.TokenValidateHandler())
+		// 文件(夹)管理
+		filemanagerGroup := v1.Group("/filemanager", middleware.TokenValidateHandler())
 		{
-			filemanager.POST("/mkdir", controllers.Mkdir)
-			filemanager.POST("/rename", controllers.Rename)
-			filemanager.POST("/move", controllers.Move)
-			filemanager.POST("/copy", controllers.Copy)
-			filemanager.POST("/delete", controllers.Delete)
-			filemanager.GET("/list", controllers.List)
-			filemanager.GET("/dir-list", controllers.DirList)
+			filemanagerGroup.POST("/mkdir", filemanager.Mkdir)
+			filemanagerGroup.POST("/rename", filemanager.Rename)
+			filemanagerGroup.POST("/move", filemanager.Move)
+			filemanagerGroup.POST("/copy", filemanager.Copy)
+			filemanagerGroup.POST("/delete", filemanager.Delete)
+			filemanagerGroup.GET("/list", filemanager.List)
+			filemanagerGroup.GET("/dir-list", filemanager.DirList)
 		}
 
-		// Recycle File operation
-		recycle := v1.Group("/recycle", middleware.TokenValidateHandler())
+		// 回收站操作
+		recycleGroup := v1.Group("/recycle", middleware.TokenValidateHandler())
 		{
-			recycle.GET("/list", controllers.RecycleList)
-			recycle.POST("/delete", controllers.RecycleDelete)
-			recycle.POST("/restore", controllers.RecycleRestore)
-			recycle.POST("/clear", controllers.RecycleClear)
+			recycleGroup.GET("/list", recycle.List)
+			recycleGroup.POST("/delete", recycle.Delete)
+			recycleGroup.POST("/restore", recycle.Restore)
+			recycleGroup.POST("/clear", recycle.Clear)
 		}
 
-		// 上传
-		uploadManager := v1.Group("/upload", middleware.TokenValidateHandler())
+		// 文件上传
+		uploadGroup := v1.Group("/upload", middleware.TokenValidateHandler())
 		{
-			uploadManager.POST("/batch", upload.BatchUpload)
-			uploadManager.POST("/single-upload", upload.SingleUpload)
-			uploadManager.POST("/pre-upload", upload.PreUpload)
+			uploadGroup.POST("/batch", upload.BatchUpload)
+			uploadGroup.POST("/single-upload", upload.SingleUpload)
+			uploadGroup.POST("/pre-upload", upload.PreUpload)
 			// 秒传api
-			uploadManager.POST("/instant", upload.Instant)
+			uploadGroup.POST("/instant", upload.Instant)
 		}
+
+		// 分享
+		// share := v1.Group("/share")
+		// {
+		// 	share.POST("/cancle", controllers.Cancle)
+		// }
+		// /share/cancle
+		// /share/list
+		// /share/create
+		// /share/delete
+		// /share/update
+
+		// /s/:name // 分享
 
 	}
 
 	r.NoRoute(func(c *gin.Context) {
-		response.Error(c, "无效的路由")
+		response.JSON(c, 404, "404", nil)
 	})
 
 	return r

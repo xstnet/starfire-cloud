@@ -9,7 +9,7 @@ import (
 type User struct {
 	BaseModel
 	Username   string `json:"username"`
-	Password   string `json:"password"`
+	Password   string `json:""`
 	Email      string `json:"email"`
 	Nickname   string `json:"nickname"`
 	TotalSpace uint64 `json:"totalSpace"` // 为用户分配的最大存储空间， 若为0则代表不限制

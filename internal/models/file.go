@@ -11,8 +11,8 @@ type File struct {
 	Size     uint64 `json:"size"`
 	Extend   string `json:"extend"`
 	MimeType string `json:"mimeType"`
-	OwnId    uint   `json:"ownId"`
-	RefCount uint   `json:"refCount"`
+	OwnId    uint   `json:"-"`
+	RefCount uint   `json:"-"`
 	Kind     uint8  `json:"kind"`
 }
 
@@ -26,7 +26,7 @@ const (
 )
 
 var Ext2kind = map[string]uint8{
-	// Docment
+	// Document
 	"txt":  KIND_DOC,
 	"rtf":  KIND_DOC,
 	"doc":  KIND_DOC,
@@ -95,7 +95,7 @@ func (f *File) DeIncRef() error {
 	return f.DB().Model(f).Update("ref_count", f.RefCount).Error
 }
 
-// 已上传成功,  入库
+// Create 已上传成功,  入库
 func (f *File) Create(userId uint, size uint64, md5, path, ext, mimeType string) error {
 	f.Size = size
 	f.Md5 = md5
